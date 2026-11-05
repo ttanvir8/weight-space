@@ -18,10 +18,10 @@ These facts shape the "first experiment" for each seed.
 
 | Asset | In repo? | Notes |
 |---|---|---|
-| Exp 1 game policies (500-32-32-5, 4 games) | Weights yes (`exp1_which_game/networks/*.npz`) | The 10x10 grid games are the authors' own; their env code is **not** in the repo. Use MinAtar (public) for anything that needs rollouts. |
-| Exp 3 char-transformer blocks | Yes (`exp3_language/networks/*/blocks.npz`, embeddings removed) | Not runnable end to end without embeddings. Train your own tiny models for write tasks. |
-| Exp 4 Kinetix actor, before and after the edit | Yes (`exp4_fix_car/networks/ppo_final_seed0.npz`, `edited_actor.npz`) | Actor only. A critic must be re-fitted before PPO can resume from either. |
-| Exp 5 written MinAtar networks | Yes (`exp5_write_from_scratch/networks/<game>/hand.npz`) | PPO checkpoints are not included; the PPO recipe is in the README. |
+| Exp 1 game policies (500-32-32-5, 4 games) | Actor and critic weights (`exp1_which_game/networks/*.npz`, checked) | The 10x10 grid games are the authors' own ("our own 10 x 10 grid versions", Exp 1 README); no env code is in the repo (no `.py` with an env class or `reset`, checked by grep). Use MinAtar (public) for anything that needs rollouts. |
+| Exp 3 char-transformer blocks | Yes (`exp3_language/networks/*/blocks.npz`: only the 4 blocks' LN, attention and MLP tensors, checked) | Embeddings, final LayerNorm and output matrix are not included (Exp 3 README, line 98). Not runnable end to end. Train your own tiny models for write tasks. |
+| Exp 4 Kinetix network, before and after the edit | Yes (`exp4_fix_car/networks/ppo_final_seed0.npz`, `edited_actor.npz`) | Checked: `ppo_final_seed0.npz` holds the full actor-critic, including the value head (`DenseAndActivation_5..9`, `Dense_1`). The embedding layer `Dense_0` (679 -> 128) is **shared** by actor and critic, and the edit changed it (`embed.W` 1,887 entries, `embed.b` 1 entry, per `eval/oneshot_result.json`). So PPO can resume with the original critic, but the critic then reads a changed embedding. |
+| Exp 5 written MinAtar networks | Yes (`exp5_write_from_scratch/networks/<game>/hand.npz`, actor only) | PPO checkpoints are not included; the PPO recipe is in the README. The 6-channel observation mapping is specified in the prompts for Breakout, Seaquest and Asterix only. |
 | Exp 6 Go networks + sandbox prelude | Yes (40 MB) | `harness/sandbox.py` is a reusable bubblewrap sandbox with `load/save` over named tensors. |
 | Exp 7 Gemma fine-tunes | No (17 GB), rebuildable from data + script + hashes | |
 | Exp 8 edit diffs + `apply_edit` script | Yes | Forward-pass tool design (generation or teacher-forced read, budgeted) is documented in the README. |
@@ -48,15 +48,20 @@ subspace, so the result stays readable and the LLM can be asked to revise the sk
 
 **First experiment (2 days).** Seaquest and Asterix in MinAtar 1.0.15. Extend the Exp 5 "edits" language with a
 `knob name = default [lo, hi]` declaration and allow weight statements to reference knobs (`W1[i,j] = 3*k_dodge`).
-Tune knobs with CMA-ES (population 16, 64 episodes per candidate) or with PPO on the knob vector only. Budget:
-5M environment steps. Then one LLM revision round: show the LLM the tuned knob values and per-episode death causes,
+Tune knobs with CMA-ES (population 16, 16 episodes per candidate, at most 32 knobs) or with PPO on the knob vector
+only. Budget: 50M environment steps (with episodes of roughly 1k steps, 16 x 16 episodes is about 0.25M steps per
+generation, so about 200 generations; 5M steps would allow only about 20, too few for CMA-ES even in 32 dimensions). Then one LLM revision round: show the LLM the tuned knob values and per-episode death causes,
 let it rewrite the sketch, re-tune. 5 independent LLM replies per game.
 
 **Metric.** Mean return over 1,000 episodes (Exp 5 protocol) against environment steps; area under the curve.
 
 **Baselines.** The untuned written network (Exp 5 numbers); PPO from random init at the same step budget and at
-100M/500M steps (Exp 5 numbers); CMA-ES over a random 64-dim subspace of the same network (intrinsic-dimension
-style), which isolates the value of the LLM choosing the subspace.
+100M/500M steps (Exp 5 numbers); CMA-ES over a random subspace of the same size around the written network
+(intrinsic-dimension style), which isolates the value of the LLM choosing the subspace; and the key comparison,
+full-weight PPO fine-tuning from the same written network at the same 50M steps (the skeptical report's Seed B arm).
+Knobs are only worth having if they match or beat that arm while staying readable. Random-init PPO at 50M steps
+alone would be a weak baseline: Exp 5 shows PPO at 100M is already below the untuned written network on all three
+games.
 
 **Main risk.** The LLM may not expose the right knobs; failures may come from missing features, not wrong constants.
 The revision round is there to test whether it can add structure when told what goes wrong.
@@ -65,8 +70,10 @@ The revision round is there to test whether it can add structure when told what 
 Programs (Friedman, Wettig, Chen, NeurIPS 2023; verified this session: trained transformers converted to discrete
 programs, the reverse direction); Evolution Strategies as a scalable alternative to RL (Salimans et al. 2017; not
 re-verified); Measuring the Intrinsic Dimension of Objective Landscapes (Li et al. 2018; not re-verified); OPRO, LLMs
-as optimizers (Yang et al. 2023; not re-verified). I found nothing on LLM-declared parameter subspaces for weight
-tuning, but I only ran standard search.
+as optimizers (Yang et al. 2023; not re-verified). In code space the pattern is likely already common: an LLM writes a
+parameterized program and an outer loop tunes or evolves it (PROG-POLICY-ATARI, arXiv 2508.19506, from the prior
+report's list; FunSearch and Eureka, from memory). The new part is doing this in weight space. **I ran no prior-art
+search for this seed**, so there may be close weight-space work I have not seen.
 
 **Cost.** About 5 x 2 games x 2 rounds x 30k output tokens = 600k output tokens. CMA-ES on MinAtar: a few GPU-hours
 with a JAX/gymnax MinAtar port, or CPU-only with the official package.
@@ -84,24 +91,32 @@ weights) or a brittle patch that PPO erases.
 **Extends.** Exp 4 (same Kinetix actor, same prompt pattern, same edit language). It is not Seed B (init only): the
 LLM acts mid-training, on a network that already has trained skill, and may act more than once.
 
-**First experiment (3 days).** Kinetix handmade levels. Step 1: run the official Kinetix PPO on about 10 handmade
-levels and keep those where success stays at 0 after a fixed budget (car-on-ramp is known to qualify; aim for 4 to 6
-levels). Step 2: for each, do one Exp 4-style one-shot edit (5 independent replies per level). Step 3: re-fit the
-critic for a short phase with the actor frozen (the repo has the actor only), then resume PPO for 50M steps from
-(a) the edited actor and (b) the unedited actor. Log success rate and how much the inserted path's weights change.
-Optional step 4: allow a second LLM intervention if success drops.
+**First experiment (3 days).** Start with car-on-ramp alone, the one level that is known to be stuck (0 successes
+after 1B steps) and whose full actor-critic is in the repo. Step 1: 5 independent Exp 4-style one-shot edits (the
+released edit is a sixth). Step 2: the critic is in `ppo_final_seed0.npz`, but its shared embedding layer changed
+with the edit, so first re-fit the value head for a short phase with the actor frozen. Step 3: resume PPO for 50M
+steps from (a) each edited network and (b) the unedited network. Step 4, only if day 1 to 2 go well: run PPO on
+about 10 more handmade levels and add those still at 0 success after a fixed budget. A level stalled at a fixed
+budget is not proven to be a local minimum, so report the car-on-ramp result separately from these. Optional: allow
+a second LLM intervention if success drops.
 
-**Metric.** Success rate after resume versus steps; retention (success at the end of resume divided by success right
-after the edit); steps to 90% success; fraction of runs that escape.
+**Metric.** The edit already gives 100% success on car-on-ramp, so "steps to 90% success" would be zero by
+construction and cannot tell a lasting escape from a brittle patch. Use instead: (1) retention (success at the end
+of resume over success right after the edit); (2) **absorption**: at the end of resume, ablate the inserted path
+(reset the edited entries to their pre-edit values, keeping all other PPO updates) and measure success. High success
+after ablation means PPO moved the trained network into the new basin. Low success means it still depends on the
+patch. (3) Return on the level's unshaped reward (time to goal), which the edit does not optimise and PPO can improve.
+For levels where the edit is only partly successful, steps to 90% success is a valid extra metric.
 
 **Baselines.** Continued PPO at the same steps; PPO restart with a raised entropy coefficient; PPO with 4 random
 restarts (same total steps); an action-override scheme in the spirit of ULTRA, where the LLM suggests actions at
 critical states instead of editing weights.
 
-**Main risk.** The Exp 4 edit uses very large weights (for example `actor0.W[6,122] = 80`) that saturate tanh units.
-Saturated paths pass no gradient, so PPO may neither destroy nor refine them; or the entropy bonus may push the policy
-off the gated path. Either outcome is informative; plan a variant where the LLM is told PPO will resume and asked for
-non-saturating edits.
+**Main risk.** The Exp 4 edit uses very large weights (`eval/oneshot_result.json` reports a relative change of
+about 3,700x on `actor0.b` and 100x on `embed.b`) that saturate tanh units. Saturated paths pass no gradient, so PPO
+may neither destroy nor refine them; or the entropy bonus may push the policy off the gated path. Either outcome is
+informative; plan a variant where the LLM is told PPO will resume and asked for non-saturating edits. A second risk
+is generality: the first experiment has one level, so it shows a mechanism, not a rate.
 
 **Closest prior work.** ULTRA, "LLM-Guided Reinforcement Learning: Addressing Training Bottlenecks through Policy
 Modulation" (arXiv 2505.20671; abstract seen via search: LLM flags critical states and overrides actions plus reward
@@ -138,12 +153,18 @@ family members, binned by position and radius, hit at least once), and class acc
 for the empirical family (an upper bound on validity, a memorizer); a hand-written denoiser by a human expert, if
 someone will spend an hour on it.
 
-**Main risk.** 64 hidden units may be too few to represent position-equivariant denoising by hand; the LLM may write
-a memorizing lookup over a few templates. Coverage catches this.
+**Main risk.** Capacity. The family is finite (about 100 position and radius combinations on a 12x12 grid), so a
+template bank over all members is a legitimate solution here, not a failure: there is no training set to memorise.
+The question is whether 64 hidden units suffice for the LLM to cover the family. Coverage measures this. If the
+hand-written denoiser covers only a few templates, coverage will be low. Because the family is enumerable, the
+metric cannot tell "generalising" from "enumerating"; do not claim generalisation from this experiment.
 
 **Closest prior work.** Neural Network (Parameter) Diffusion, p-diff (Wang et al. 2024, arXiv 2402.13144, verified
-via abstract): generates weights with a trained diffusion model, not by reasoning. Tracr for compiled weights. I know
-of no work on hand-writing diffusion model weights; not searched beyond standard mode.
+via abstract): generates weights with a trained diffusion model, not by reasoning. Tracr for compiled weights.
+Closed-form and analytic denoisers (for example, work on optimal empirical denoisers and on locally equivariant
+analytic denoisers, such as Kamb and Ganguli 2024, from memory, not verified) are relevant to how a hand-written
+denoiser could be structured. **I did not search specifically for hand-written diffusion weights**; my one search
+was for p-diff.
 
 **Cost.** Smallest of the eight: about 23.8k weights, so prompts are short; 20 runs x 30k output tokens. Evaluation
 and the trained baseline run on a laptop.
@@ -161,9 +182,13 @@ feeding an induction head) means the LLM must transplant a composition, not one 
 **Extends.** Exp 3 (read) plus Exp 8 (write with forward-pass budget) on tiny character transformers.
 
 **First experiment (2 to 3 days).** Train small char-level transformers (2 to 4 layers, width 128 to 384) on the Exp 3
-corpora (the rebuild scripts are in the repo) and on a "no-repeat" corpus where induction never helps, so the
-recipient has no induction head. Donor: a model with one. Recipient variants: same width, different seed; different
-width; recipient with an extra empty head slot (add one zero-initialised head so nothing existing is overwritten).
+corpora (the Python rebuild scripts are in the repo; I did not check how the romaji and English corpora are rebuilt).
+Natural text always contains repeats, so a "no-repeat corpus" is not a reliable way to get a recipient without
+induction. Make recipients in one of two ways instead: (i) a checkpoint saved before the induction-head phase change
+(Olsson et al. report it early in training), confirmed by the Exp 3 induction score staying at or below 0.02 for every
+head; or (ii) a fully trained model whose induction heads are zero-ablated (its other weights stay co-adapted).
+Donor: a fully trained model with induction heads. Recipient variants: same width, different seed; different width;
+recipient with an extra empty head slot (add one zero-initialised head so nothing existing is overwritten).
 LLM gets both models' blocks in the sandbox (Exp 3 rules) plus 10 forward passes on the recipient (teacher-forced
 reads, as in Exp 8). 5 runs per variant.
 
@@ -274,10 +299,17 @@ measure agreement again. Decompile plus recompile is a round trip through weight
 program). The skeptical report's Seed A asks which medium is better; this seed uses both media as a translation pair.
 
 **First experiment (1 to 2 days).** The Exp 1 grid games are not released, so use MinAtar. Train 600-32-32-6 tanh PPO
-policies with the Exp 5 recipe on Breakout, Asterix, Freeway and Space Invaders (3 seeds each; minutes to an hour each
-with a JAX MinAtar port). For each network: LLM gets weights in the Exp 6 sandbox (analysis allowed, no forward pass)
-and returns a Python policy. Arm 2: also 10 positions passes (Exp 6 style, up to 256 states each, top actions only).
-Then a recompile step: LLM writes weights for its own program, in one reply.
+policies with the Exp 5 recipe on Breakout, Seaquest and Asterix (4 seeds each; minutes to an hour each with a JAX
+MinAtar port). These are the three games whose 6-channel observation mapping is written out in the Exp 5 prompts.
+Freeway and Space Invaders would need a new mapping. For each network: LLM gets weights in the Exp 6 sandbox
+(analysis allowed, no forward pass) and returns a Python policy. Arm 2: also 10 positions passes (Exp 6 style, up to
+256 states each, top actions only). Then a recompile step: LLM writes weights for its own program, in one reply.
+
+**Rule that keeps the metric meaningful.** A 3-layer MLP is trivial to evaluate in numpy, so in the weights-only arm
+the LLM could compute the network on synthetic states and fit a tree or table to the outputs. That would be
+distillation by query, not reading, and the agreement score would not tell them apart. Forbid evaluating the network
+(or any layer composition) on inputs in the sandbox, and audit every code run as Exp 3 did. Any run that breaks the
+rule is scored as arm 2 or discarded. In arm 2, give the VIPER baseline the same number of queried states.
 
 **Metric.** Top-action agreement with the original on 10k states from the original's own rollouts; return of the
 program and of the recompiled network relative to the original; program length; agreement of recompiled vs
@@ -297,7 +329,9 @@ Transformer Programs (verified); VIPER, Verifiable RL via Policy Extraction (Bas
 verified this session).
 
 **Cost.** Cheapest of the strong seeds: about 20k weights per network; 12 networks x 2 arms x (100k to 1M input,
-30k output) tokens. GPU: under 2 GPU-hours for PPO training.
+30k output) tokens. GPU: under 2 GPU-hours for PPO training. Human time: auditing sandbox code runs for forbidden
+forward passes (scriptable in part, as a check for matmul chains that start at an input-shaped array, but plan for a
+manual pass).
 
 ---
 
@@ -315,8 +349,11 @@ are LLM-written, labelled by construction, and adversarially optimised against t
 
 **First experiment (2 days).** MinAtar Breakout and Asterix, 600-32-32-6. Red: 20 trojaned networks per game, with the
 constraint that clean return is at least 80% of the Exp 5 written network and the trigger fires in under 1% of normal
-states. Blue arms: weights only; weights plus 10 positions passes. Also 20 clean networks per game as negatives. Two
-rounds of red-blue adaptation. Use different model families for red and blue where possible, so that "same model
+states. Red cannot run its network under Exp 5 rules, so the harness checks both constraints (1,000 clean episodes,
+and trigger rate on states from those episodes) and rejects networks that fail. Report the rejection rate. Also 20
+clean networks per game, written by the same red model without a trojan, as negatives. Clean networks must come from
+the same writer, or blue could separate the two classes by writing style instead of by finding the trojan. Blue arms:
+weights only; weights plus 10 positions passes. Two rounds of red-blue adaptation. Use different model families for red and blue where possible, so that "same model
 knows its own tricks" is controlled.
 
 **Metric.** Blue detection AUROC (trojaned vs clean); trigger recovery (does blue's described trigger reproduce the
@@ -333,8 +370,9 @@ red-side constraint (weight-magnitude distribution matching the clean network) a
 via abstract: blind red/blue auditing game, 3 of 4 teams won, all with data access); the NeurIPS 2022 Trojan Detection
 Challenge (from memory, not verified); TRIGGER-HAYSTACK (arXiv 2602.03085, from the prior report's list, unchecked).
 
-**Cost.** LLM: 160 written networks x about 30k output tokens (red) plus 160 x 2 reads at about 80k input tokens
-(blue): roughly 5M output and 25M input tokens per round. GPU: negligible.
+**Cost.** Per round: 80 written networks (2 games x 20 trojaned + 20 clean), plus rejected attempts, at about 30k
+output tokens each, so about 2.4M or more output tokens for red. For blue, 80 networks x 2 arms = 160 reads at about
+80k input tokens, about 13M input tokens. GPU: negligible.
 
 ---
 
@@ -349,25 +387,37 @@ Challenge (from memory, not verified); TRIGGER-HAYSTACK (arXiv 2602.03085, from 
 Scores are my judgement on a 1 to 5 scale. Excitement = how much a positive result would move the WSP agenda.
 Feasibility = chance of a clean result within 1 to 3 days with the repo's assets.
 
+The scores are coarse (1 to 5). Seeds 2, 7 and 4 tie at 20, and so do 1 and 8 (16) and 5 and 6 (12). The order
+within a tie is a judgement call, not a result of the scores.
+
 | Rank | Seed | Excitement | Feasibility | Product | Why |
 |---|---|---|---|---|---|
-| 1 | 2 Plateau surgeon | 5 | 4 | 20 | Turns Exp 4's best result into a training-loop component; actor and prompt pattern are in the repo; no prior work found that edits weights at a plateau. |
-| 2 | 7 Decompile-verify-recompile | 4 | 5 | 20 | Cheapest strong seed; gives WSP a scalable, label-free read metric that all later seeds can reuse. |
-| 3 | 4 Circuit transplant | 5 | 4 | 20 | Tests an implication the authors state but never test; small models, clear ground-truth metric from Exp 3. |
-| 4 | 1 Weight programs with knobs | 4 | 4 | 16 | The most natural LLM-plus-optimizer hybrid; directly targets the games where Exp 5 lost. |
-| 5 | 8 Trojan game | 4 | 4 | 16 | Produces a benchmark and a safety story; risk that written trojans are trivially visible. |
-| 6 | 3 Write the generator | 3 | 5 | 15 | Very cheap new domain, but less consequential. Good warm-up or student project. |
-| 7 | 5 Edit composition | 4 | 3 | 12 | Important for any deployment story; needs a multi-level agent first. |
-| 8 | 6 Guard circuits | 4 | 3 | 12 | Highest safety relevance; LLM-scale harness and the "no fitting" rule make it the hardest to run cleanly. |
+| 1= | 2 Plateau surgeon | 5 | 4 | 20 | Turns Exp 4's best result into a training-loop component. The full actor-critic is in the repo, which makes the car-on-ramp first experiment feasible. One standard search found no weight edits at a plateau. Limit: the first experiment has one level. |
+| 1= | 7 Decompile-verify-recompile | 4 | 5 | 20 | Cheapest strong seed; a scalable, label-free read metric. It needs the no-forward-pass audit, or the metric cannot separate reading from distillation. |
+| 1= | 4 Circuit transplant | 5 | 4 | 20 | Tests an implication the authors state but never test; small models, clear ground-truth metric from Exp 3. Recipient construction fixed (pre-phase-change checkpoint or ablated heads). |
+| 4= | 1 Weight programs with knobs | 4 | 4 | 16 | The most natural LLM-plus-optimizer hybrid; targets the games where Exp 5 lost. It is only informative against the full-weight fine-tune arm, and I did not search its prior art. |
+| 4= | 8 Trojan game | 4 | 4 | 16 | Produces a benchmark and a safety story; risk that written trojans are trivially visible. The harness must enforce red's constraints. |
+| 6 | 3 Write the generator | 3 | 5 | 15 | Very cheap new domain, but less consequential, and the finite family means it cannot show generalisation. Good warm-up or student project. |
+| 7= | 5 Edit composition | 4 | 3 | 12 | Important for any deployment story; needs a multi-level agent first (checkpoint availability unchecked). |
+| 7= | 6 Guard circuits | 4 | 3 | 12 | Highest safety relevance; LLM-scale harness and the "no fitting" rule make it the hardest to run cleanly. |
 
 ## Recommendation: top 3 and order
 
-1. **Seed 7 first (1 to 2 days).** It is the cheapest, it needs only MinAtar and the Exp 5 recipe, and its
-   agreement metric becomes the evaluation tool for later work (for example, scoring what a plateau edit changed).
-2. **Seed 2 second (3 days).** Reuses the Exp 4 assets. Run the critic re-fit and the "unedited resume" arm first, so
-   the edited arm has a clean comparison. Include the non-saturating-edit variant.
+The three top seeds do not depend on each other: Seed 2 uses Kinetix, Seed 7 MinAtar, Seed 4 small char
+transformers. The order below is therefore set by cost, risk and shared tooling, not by dependencies.
+
+1. **Seed 7 first (1 to 2 days).** Cheapest and lowest risk. It builds the MinAtar PPO-training and 1,000-episode
+   evaluation pipeline (Exp 5 recipe and channel mapping), which Seeds 1 and 8 and the skeptical report's Seed B
+   reuse directly. Its results do not feed Seeds 2 or 4.
+2. **Seed 2 second (3 days).** Reuses the Exp 4 assets. Run the value-head re-fit and the "unedited resume" arm
+   first, so the edited arm has a clean comparison. Report absorption (the ablation test), not steps to success.
+   Include the non-saturating-edit variant.
 3. **Seed 4 third (2 to 3 days).** Start with the "extra empty head slot" variant at matched width, which is the
-   most likely to succeed, then move to different widths.
+   most likely to succeed, then move to different widths. If GPU time is free while Seed 2 waits on Kinetix runs,
+   training Seed 4's small models in parallel is fine; nothing blocks it.
+
+Real dependencies outside the top 3: Seed 1's key baseline is Seed B (full-weight fine-tune from the written
+network), so run them together. Seed 5 needs a multi-level Kinetix agent before anything else.
 
 Across all three: pre-register metrics, run at least 5 LLM replies per condition (WSP used n = 1 per condition), and
 log tokens and wall time per run so cost can be compared with the gradient baselines.
@@ -383,8 +433,16 @@ log tokens and wall time per run so cost can be compared with the gradient basel
   task arithmetic, Representation Engineering, Circuit Breakers, VIPER, Neural Cleanse, the Trojan Detection
   Challenge, Lenc and Vedaldi. IDs taken from the skeptical report's list (REFUSAL-DIR 2406.11717, TRIGGER-HAYSTACK
   2602.03085) are as unchecked as they were there.
-- **"No prior work found" claims** (Seeds 1, 2, 3, 4) rest on one or two standard-mode searches each. An extended
-  search could change them.
-- **Not checked:** whether Kinetix general-agent checkpoints are public (Seed 5); whether the Exp 4 critic can be
-  re-fitted without hurting the actor (Seed 2); exact GPU times, which are estimates.
-- **Repo facts** (assets table, cost anchors) come from the READMEs and one `run.json` per experiment that I opened.
+- **"No prior work found" claims.** Seed 2 and Seed 4 each rest on one standard-mode search, and both searches
+  returned only neighbouring work. **No search was run for Seed 1 or Seed 3** (earlier wording implied there was;
+  corrected). Seeds 5 to 8 make no novelty claim beyond the named prior work. An extended search could change any of
+  this.
+- **Checked against the repo (second pass):** tensor names in the Exp 1, Exp 3, Exp 4 and Exp 5 `.npz` files. The
+  Exp 4 critic **is** included; the first version of this memo said "actor only", which was wrong. The edited
+  embedding is shared with the critic. Exp 3 has no embeddings or output layer. No Exp 1 env code is in the repo.
+  The Exp 5 channel mapping covers only Breakout, Seaquest and Asterix. The Exp 4 relative-change figures come from
+  `eval/oneshot_result.json`.
+- **Not checked:** whether Kinetix general-agent checkpoints are public (Seed 5); how the romaji and English Exp 3
+  corpora are rebuilt; MinAtar episode lengths used in the Seed 1 budget arithmetic (about 1k steps assumed); exact
+  GPU times, which are estimates.
+- **Repo facts** (cost anchors) come from the READMEs and one `run.json` per experiment that I opened.
