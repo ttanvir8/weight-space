@@ -123,8 +123,11 @@ sigmoid), that says in which states its own policy should be trusted ("trust the
 adjacent; do not trust the surfacing logic, I was unsure about the oxygen timing"). The prior then constrains the
 student only where the writer is confident, and the student's weights are never saturated.
 
-**Why natural, why likely missed.** It uses the three Exp 5 networks unchanged, and Seaquest and Asterix are the games
-where the hand network loses to 500M-step PPO (53.1 vs 88.9, 53.2 vs 55.2). WSP treats a written network as an
+**Why natural, why likely missed.** It uses the three Exp 5 networks unchanged. (Recheck correction: an earlier draft
+said the hand network "loses to 500M-step PPO" on Seaquest and Asterix. That compares against the best PPO seed only.
+In `minatar_eval.json` the three PPO-500M seeds score 7.5 / 4.4 / 88.9 on Seaquest and 44.7 / 55.2 / 46.9 on Asterix, so
+the hand network (53.1 / 53.2) beats the median PPO-500M seed in every game. The case for a prior is therefore "a cheap
+teacher that is better than most PPO runs", not "a network PPO can still beat".) WSP treats a written network as an
 answer. Treating it as a fallible prior with a written statement of its own uncertainty is an RL use the post does not
 discuss (its implications list says "write a good starting network", i.e. init).
 
@@ -141,7 +144,13 @@ score (53.1 / 53.2) at 50M steps is not guaranteed by construction: the KL term 
 100M steps reached only 5.6 (Seaquest) and 25.8 (Asterix) best-seed.
 
 **Baselines.** Arms (a), (b), (c), (e) above. Kickstarting with a PPO-trained teacher of equal score is the fairness
-check: if any teacher of score 53 gives the same gain, the gain comes from distillation, not from the writing.
+check: if any teacher of score 53 gives the same gain, the gain comes from distillation, not from the writing. Recheck
+caveat: that check is expensive here. No MinAtar PPO checkpoints are in the repo, and PPO needs about 500M steps to
+reach a score near 45 to 55 on Asterix (and only one of three seeds got there on Seaquest), about 10 times the arm
+budget. A cheaper substitute is a behaviour-cloned copy of the hand network, which tests "any teacher with the same
+action distribution", not "a PPO teacher". Also, beating arm (a) (PPO from scratch, about 4 to 5 on Seaquest at 100M
+steps) is nearly guaranteed by any distillation, so it is not evidence; the informative contrasts are (d) vs (c) and
+(d) vs (e).
 
 **Main risk.** Teachers with |w| = 1,000 give near-deterministic logits, so KL is dominated by a few states; use a
 temperature on the teacher's logits (a fixed 3-value sweep). A second risk is that the gate is uninformative because
@@ -222,12 +231,17 @@ RL write is single-task. This differs from the extension memo's Seed 5 (many pat
 family) and Seed 4 (moving one circuit between transformers): here two whole policies from different tasks must
 share a fixed capacity.
 
-**First experiment (2 days).** Step 1, warm-up with zero training: merge the two Exp 5 hand networks. Breakout's uses
-only 6 + 8 units, Asterix's uses all 32 + 32, so a 32-wide merge must compress Asterix's design. That is not
-trivial, but these are sparse and LLM-written, so this step is a sanity check only. Step 2, the real test: train
-PPO policies (Exp 5 recipe, 50M steps, 3 seeds per game) and merge pairs. One reply per merge, no tools, both networks
-as text (about 41k numbers, roughly 150k input tokens); 3 pairs x 3 replies. Forbid nothing extra: with no tools, the
-LLM cannot run either network.
+**First experiment (2 days).** Recheck change: the hand networks are now the primary sources, not a warm-up. They are
+the only trained-quality policies in the repo (517.4 / 53.1 / 53.2), while PPO sources at a budget this experiment can
+afford are near the floor on Breakout and Seaquest (PPO-100M: Breakout 5.6 to 15.8 with 7 of 10 seeds below 7;
+Seaquest 4.4 to 5.6; Asterix 13 to 26). A merged/source ratio on a near-floor source is noise.
+Step 1 (primary, zero training): merge pairs of Exp 5 hand networks, one reply per merge, no tools, both networks as
+text (about 41k numbers, roughly 150k input tokens); 3 pairs x 3 replies. Breakout uses only 6 + 8 units, Asterix and
+Seaquest use 32 + 32 and 32 + 26, so Breakout + Asterix and Breakout + Seaquest fit with compression, while Seaquest +
+Asterix needs almost twice the width and is expected to fail (report it as the capacity limit, not as a miss). Because
+the sources are the writer's own style, the from-rules baseline below is mandatory. Step 2 (secondary): the same with PPO
+policies at 100M+ steps, Asterix first, only if the validated pipeline shows scores clearly above random. Forbid nothing
+extra: with no tools, the LLM cannot run either network.
 
 **Metric.** For each game, return of the merged network divided by the source network's return (1,000 episodes),
 after subtracting the random-policy return (measure it; do not assume 0). Report the minimum over the two games: a
@@ -297,7 +311,14 @@ edit, which isolates "reading weights" from "seeing attributions"; (d) oracle: r
 pairs (upper bound); (e) **rules-only write**: the LLM writes a 600-32-32-1 reward model from the game rules with no
 reward model shown (Exp 5 style). If (e) matches the edits, the result shows writing, not reading.
 
-**Main risk.** The planted bugs may be too visible (one input block with large first-layer weights), which makes the
+**Main risk (added at recheck).** Dynamic range. The headline metric is normalised between PPO on the bugged reward (0)
+and PPO on the true reward (1), at 20M steps. PPO on Asterix reaches only 13 to 26 at 100M steps with a large seed
+spread (`minatar_eval.json`), so at 20M the gap between "bugged" and "true" may be smaller than the seed noise on both
+ends, and a ratio with a noisy denominator is unstable. Add a pre-check before any LLM call: PPO-true must beat random
+and PPO-bugged by more than the seed standard deviation, on 3 seeds; if not, raise the budget (cost grows about 5x for
+100M) or drop organisms. The discard rule above removes organisms but cannot rescue a study that discards most of them.
+
+**Second risk.** The planted bugs may be too visible (one input block with large first-layer weights), which makes the
 detection trivial; use a spurious feature that is distributed (column position across many cells) as the harder
 case, and report results per feature type. A second risk: a removal edit may also remove real signal (top rows may
 genuinely be safer in Asterix); the clean organisms and the true-reward oracle measure that.
@@ -343,9 +364,12 @@ reply). 5 LLM replies; arms (e) and (f) use the same reply where the LLM writes 
 **Metric.** Return (1,000 episodes) at 30M steps and AUC. A memory probe, independent of return: a linear readout,
 fitted by the harness (evaluation only, not by the LLM) on held-out rollouts, predicts the ball's true direction
 from h_t; report accuracy for (c), (d), (e). Day-0 check: (a) must beat (b) by a clear margin, otherwise the trail is
-not needed and the POMDP is not real. If PPO hardly learns Breakout in 30M steps (PPO-100M best seed reached only
-15.8), the arms cannot separate; check the arm-(a) curve first and raise the budget or switch to a game where PPO
-learns faster.
+not needed and the POMDP is not real. Recheck correction: the failure case is the expected case. In
+`minatar_eval.json`, 7 of 10 Breakout PPO-100M seeds score below 7 (best 15.8), so at the stated 30M steps every
+trained arm will sit near the floor and the arms cannot separate. Either budget 100M+ steps (about 3x the cost) or
+lead with the two measurements that do not need PPO to learn Breakout: the memory probe (a fitted readout, scored on
+rollouts) and arm (f), the fully written recurrent policy, which like the Exp 5 hand network (517.4, no training) needs
+no learning. The PPO arms (c) to (e) then become the second stage.
 
 **Baselines.** (a) to (d) above; (c) is the standard approach and (d) is the precise control for "the LLM chose the
 recurrence".
