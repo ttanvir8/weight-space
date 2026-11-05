@@ -320,7 +320,7 @@ and PPO-bugged by more than the seed standard deviation, on 3 seeds; if not, rai
 
 **Second risk.** The planted bugs may be too visible (one input block with large first-layer weights), which makes the
 detection trivial; use a spurious feature that is distributed (column position across many cells) as the harder
-case, and report results per feature type. A second risk: a removal edit may also remove real signal (top rows may
+case, and report results per feature type. A third risk: a removal edit may also remove real signal (top rows may
 genuinely be safer in Asterix); the clean organisms and the true-reward oracle measure that.
 
 **Closest prior work.** Understanding Learned Reward Functions (Michaud, Gleave, Russell 2020, arXiv 2012.05862; seen
@@ -484,6 +484,11 @@ baselines and PPO-in-model runs, a few GPU-hours.
 
 ## Shared tooling (a real dependency)
 
+**Budget reality (added at recheck).** In `minatar_eval.json`, PPO at 100M steps averages about 6 on Breakout (7 of 10
+seeds below 7, best 15.8), 4.4 to 5.6 on Seaquest, and 13 to 26 on Asterix. The stated budgets in R2 to R6 and R8 (10M
+to 50M steps) therefore sit near the floor for Breakout and Seaquest. Any claim of the form "arm X learns faster" needs
+either a larger budget or a game where PPO has learned by then (Asterix). Each seed's day-0 check should include this.
+
 Six seeds (R2 to R6, R8) need a MinAtar PPO pipeline that reproduces the Exp 5 recipe and the 1,000-episode
 evaluation. None is in the repo, and nothing is installed here. Before any MinAtar seed, check the pipeline against
 `minatar_eval.json`: retrain Asterix at 100M steps with 3 seeds and confirm the scores fall inside the range of the
@@ -509,18 +514,19 @@ viewed. Feasibility = chance of a clean result in 1 to 3 days with repo assets p
 
 | Rank | Seed | Excitement | Feasibility | Product | Reasoning |
 |---|---|---|---|---|---|
-| 1= | R1 Critic surgery | 5 | 4 | 20 | New write target with a crisp mechanism already present in the repo (deceptive shaping, stuck critic). Full actor-critic in repo; Kinetix runs are cheap. Not 5 on feasibility: the day-0 exploration check may show the critic cannot matter without exploration. |
-| 1= | R5 Reward-model surgery | 5 | 4 | 20 | Safety and RL in one; downstream metric is hard to game. Needs organism construction and many PPO runs. Novelty narrower than hoped (HARVE and "One Bias After Another" edit reward-model weights by script). |
-| 3 | R6 Write the memory | 4 | 4 | 16 | Clean design question with a sharp control (random frozen recurrence). Cheap in tokens. Risk: Breakout learns slowly under PPO (15.8 at 100M best seed). |
-| 4 | R2 Written prior + trust gate | 3 | 5 | 15 | Most feasible: core arms need no new LLM call. Least novel: kickstarting and LLM priors exist; the gate is the new part. |
-| 5= | R3 Plasticity doctor | 4 | 3 | 12 | Strong idea, but small 32-unit nets may show little plasticity loss; needs many seeds for small effects. |
-| 5= | R4 Two-game merge | 3 | 4 | 12 | Feasible and clear metric; less RL-specific (it is model merging on policies). |
-| 5= | R8 Write the simulator | 4 | 3 | 12 | Cleanest test of "compile" versus "design"; hard write; the RL win needs the shift case. |
+| 1 | R1 Critic surgery | 5 | 4 | 20 | New write target with a crisp mechanism already present in the repo (deceptive shaping, stuck critic). Full actor-critic in repo; Kinetix runs are cheap. Not 5 on feasibility: the day-0 exploration check may show the critic cannot matter without exploration. |
+| 2 | R5 Reward-model surgery | 5 | 3 | 15 | Safety and RL in one; downstream metric is hard to game. Recheck: feasibility lowered from 4 to 3 because the normalised metric needs PPO to resolve a gap at 20M steps, where MinAtar PPO is near the floor, and the study needs about 200 PPO runs plus organism construction. Novelty narrower than hoped (HARVE and "One Bias After Another" edit reward-model weights by script). |
+| 3= | R6 Write the memory | 4 | 3 | 12 | Clean design question with a sharp control (random frozen recurrence). Recheck: feasibility lowered from 4 to 3 because 7 of 10 Breakout PPO-100M seeds score below 7, so the 30M-step PPO arms will not separate; the probe and the PPO-free arm (f) still work. |
+| 3= | R2 Written prior + trust gate | 3 | 4 | 12 | Core arms need no new LLM call. Recheck: feasibility lowered from 5 to 4 (the PPO-teacher fairness check costs about 10x the arm budget) and the premise "hand network loses to PPO-500M" was a best-seed comparison. Least novel: kickstarting and LLM priors exist; the gate is the new part. |
+| 3= | R3 Plasticity doctor | 4 | 3 | 12 | Strong idea, but small 32-unit nets may show little plasticity loss; needs many seeds for small effects. |
+| 3= | R4 Two-game merge | 3 | 4 | 12 | Feasible once the hand networks are the primary sources (PPO sources are near the floor at affordable budgets); less RL-specific (it is model merging on policies). |
+| 3= | R8 Write the simulator | 4 | 3 | 12 | Cleanest test of "compile" versus "design"; hard write; the RL win needs the shift case. |
 | 8 | R7 Read the opponent | 5 | 2 | 10 | Highest ceiling in multi-agent RL, but the engine, training script and opponents must be rebuilt. |
 
-**Ties.** R1 and R5 tie at 20; I put R1 first because its assets are all in the repo and its kill test costs an hour.
-R3, R4 and R8 tie at 12; their order is arbitrary. R2 (15) and R6 (16) are close; a one-point change in either score
-would swap them.
+**Ties.** R1 (20) and R5 (15) are separated by a real margin after the recheck. Places 3 to 7 (R2, R3, R4, R6, R8) are
+a five-way tie at 12 and the table does not rank them; scores of this kind are not precise enough to. Recheck note:
+before the recheck R6 (16) and R2 (15) sat ahead of this group, which was an artifact of two optimistic feasibility
+scores that the repo's own PPO numbers do not support.
 
 ## Recommendation: top 3 and order
 
@@ -529,14 +535,15 @@ would swap them.
    arms can work at all: if run-up states are never visited, only the bump arms can test the critic edit. It uses only Kinetix, so it does not wait on the MinAtar pipeline, and it can run
    while that pipeline is built.
 2. **R5 second.** It needs the MinAtar PPO pipeline (see "Shared tooling"). That is a real dependency: none of its
-   downstream numbers mean anything until the pipeline reproduces an Exp 5 PPO score range. R5 also builds the
-   reward-model and organism tooling.
-3. **R6 third.** It needs the same validated MinAtar pipeline plus a recurrent PPO arm. It does not depend on R5's
-   results; R5 goes first only because it was ranked higher, so R5 and R6 can swap or run in parallel once the
-   pipeline is validated.
+   downstream numbers mean anything until the pipeline reproduces an Exp 5 PPO score range, and its dynamic-range
+   pre-check (see R5) decides whether 20M steps is enough. R5 also builds the reward-model and organism tooling.
+3. **Third place is a tie; the tiebreak is dependency, not score.** Prefer the seed whose headline result does not wait
+   on the unvalidated PPO pipeline: **R8** (next-frame accuracy and equivalent-data need only a Breakout simulator and
+   the sandbox), or **R6** run PPO-free first (memory probe and the written recurrent policy), or **R4** with the hand
+   networks as sources (zero training). R2's arms (a) to (c) are a pipeline exercise, not a third seed.
 
 Cheap add-on: R2's arms (a) to (c) cost no LLM tokens and reuse the validated pipeline. Run them as soon as the
-pipeline passes, as a pipeline exercise with a real result.
+pipeline passes, as a pipeline exercise with a real result (note the budget caveat in R2).
 
 Across all seeds: pre-register metrics and kill tests; at least 5 LLM replies per condition (WSP used n = 1); report
 tokens and GPU-hours next to every result.
@@ -553,6 +560,14 @@ tokens and GPU-hours next to every result.
 - **Novelty claims.** For each seed I ran one or two standard searches and found no work in which an LLM reads or
   writes that RL component as weights. That is weak evidence. R2 and R5 have close neighbours that I name. No claim of
   "no prior work" is made beyond "not found in the listed searches".
+- **Fixes after the second recheck (by the main session, against `minatar_eval.json` and the Exp 4/5 prompts):** R2's
+  "hand network loses to PPO-500M" premise was a best-seed comparison and is corrected; R6, R2 and R5 feasibility scores
+  lowered because the repo's own PPO numbers show near-floor learning at the stated budgets; R4 re-scoped to use the hand
+  networks as primary sources; R3/R4/R6 channel claims re-verified against the prompts (they hold: Breakout ball = channel
+  3, trail = channel 4, channel 1 empty; Asterix danger = channel 1, channel 3 empty); R1's premises re-verified (value
+  head not shown in the prompt; reward includes the 0.2 x (d_prev - d) term; the logged episode wedges at x about 2.00).
+  Ranking and ordering rewritten accordingly. Not re-verified: GPU-hour figures, JAX port fidelity, R1's 15-minutes-per-
+  100M-steps conversion.
 - **Fixes after one self-review pass:** R1's "the critic believes the stall is optimal" is now marked as a
   hypothesis that the read sub-task tests; the "car never rolls back" claim is limited to the one logged episode;
   R4 and R5 gained "write from rules only" baselines, because without them a fresh write that ignores the given
