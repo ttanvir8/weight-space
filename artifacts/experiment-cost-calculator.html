@@ -1,0 +1,449 @@
+<title>Experiment Cost Calculator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet report. Prose column on top, wide P&ID sheets that scroll sideways inside their own frame. */
+:root{
+  --bg:#e9ede8; --paper:#f6f8f4; --ink:#16282e; --muted:#58696c; --rule:#c3cdc6;
+  --pipe:#0e5a6b; --signal:#c2410c; --tank:#e3ecea; --hl:#fff3d6;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+    --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+  --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);margin:0;
+  padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+.prose{max-width:72ch}
+header.tb{border:2px solid var(--ink);background:var(--paper);display:grid;grid-template-columns:1fr auto;gap:0}
+header.tb .main{padding:20px 22px;min-width:0}
+header.tb .meta{border-left:2px solid var(--ink);padding:12px 16px;font:500 12px/1.7 var(--f-mono);color:var(--muted);min-width:0}
+header.tb .meta b{color:var(--ink);font-weight:500}
+h1{font:700 clamp(34px,6vw,60px)/0.95 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin:6px 0 10px;text-wrap:balance}
+.kicker{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}
+.lede{font-size:18px;max-width:62ch;margin:0}
+nav.toc{margin:20px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font:500 12px var(--f-mono);color:var(--ink);text-decoration:none;border:1px solid var(--rule);background:var(--paper);padding:5px 9px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--pipe);outline:2px solid var(--pipe);outline-offset:1px}
+h2{font:700 clamp(26px,4vw,38px)/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:56px 0 14px;padding-top:14px;border-top:3px solid var(--ink);text-wrap:balance;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h2 .tag{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.08em}
+h3{font:600 25px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--ink);text-wrap:balance}
+h3 .mode{font:500 11px var(--f-mono);letter-spacing:.1em;border:1px solid currentColor;padding:1px 6px;margin-left:8px;vertical-align:3px;color:var(--pipe)}
+h3 .mode.w{color:var(--signal)}
+h4{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:5px}
+code,.m{font-family:var(--f-mono);font-size:.9em;background:var(--tank);padding:1px 5px}
+.note{border-left:4px solid var(--signal);background:var(--paper);padding:10px 14px;margin:16px 0;max-width:72ch}
+.note.warn{background:var(--hl)}
+.eq{font:500 15px var(--f-mono);background:var(--paper);border:1px solid var(--rule);padding:10px 14px;margin:12px 0;overflow-x:auto;max-width:72ch}
+dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:0;border:1px solid var(--rule);background:var(--paper);margin:10px 0 6px;max-width:900px}
+dl.facts dt,dl.facts dd{margin:0;padding:7px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.facts dt{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--rule)}
+dl.facts dt:last-of-type,dl.facts dd:last-of-type{border-bottom:0}
+dl.gloss{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:0;border:1px solid var(--rule);background:var(--paper)}
+dl.gloss dt,dl.gloss dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.gloss dt{font:500 13px var(--f-mono);border-right:1px solid var(--rule)}
+.tw{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--rule);background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+/* drawing sheets */
+figure.sheet{margin:16px 0 24px;border:2px solid var(--ink);background:var(--paper)}
+figure.sheet .st{display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding:7px 14px;font:500 12px var(--f-mono);color:var(--muted)}
+figure.sheet .st b{font:600 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+figure.sheet .sc{overflow-x:auto;padding:6px 0 0}
+figure.sheet svg{display:block}
+figure.sheet .sf{border-top:1px solid var(--rule);padding:6px 14px;font:400 12px var(--f-mono);color:var(--muted)}
+figure.sheet.prog .st{background:var(--tank)}
+svg .sh{fill:var(--paper);stroke:var(--ink);stroke-width:2}
+svg .shf{fill:var(--ink);stroke:none}
+svg .tk{fill:var(--tank);stroke:var(--ink);stroke-width:2}
+svg .th{fill:none;stroke:var(--ink);stroke-width:1.5}
+svg .pipe{fill:none;stroke:var(--pipe);stroke-width:2.4}
+svg .sig{fill:none;stroke:var(--signal);stroke-width:1.6;stroke-dasharray:6 4}
+svg .lab{fill:var(--ink);font:600 12px var(--f-body);text-anchor:middle}
+svg .lab2{fill:var(--ink);font:400 11.5px var(--f-body);text-anchor:middle}
+svg .tg{fill:var(--muted);font:500 10.5px var(--f-mono);text-anchor:middle;letter-spacing:.04em}
+svg .tgi{fill:var(--ink);font:500 10px var(--f-mono);text-anchor:middle}
+svg .el{fill:var(--muted);font:500 10.5px var(--f-mono)}
+figure.prog svg .lab,figure.prog svg .lab2{font-family:var(--f-mono)}
+figure.prog svg .lab{font-size:11px;font-weight:500}
+figure.prog svg .lab2{font-size:11px}
+svg .lab,svg .lab2,svg .tg,svg .el{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.legend td svg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){header.tb{grid-template-columns:1fr}header.tb .meta{border-left:0;border-top:2px solid var(--ink)}.two{grid-template-columns:1fr}dl.facts{grid-template-columns:1fr}dl.facts dt{border-right:0;border-bottom:0;padding-bottom:0}}
+@media (max-width:520px){dl.gloss{grid-template-columns:1fr}dl.gloss dt{border-right:0;border-bottom:0;padding-bottom:0}}
+
+.panel{border:1px solid var(--ink);background:var(--paper);padding:16px;display:grid;gap:14px;margin:8px 0 12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.field{display:grid;gap:4px;align-content:start;min-width:0}
+.field label,.field .lbl{font:500 12px var(--f-mono);letter-spacing:.04em;color:var(--muted)}
+.field small,.hint{font-size:12.5px;color:var(--muted);line-height:1.45}
+.field.check label{display:flex;gap:8px;align-items:center;color:var(--ink);font:500 13px var(--f-body);letter-spacing:0}
+input[type=number],input[type=text],textarea{font:400 15px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--ink);padding:8px 10px;width:100%;min-width:0;border-radius:0}
+textarea{resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,.mode-opt:focus-within{outline:2px solid var(--pipe);outline-offset:2px}
+.btn{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--paper);border:1px solid var(--ink);padding:7px 12px;cursor:pointer;border-radius:0}
+.btn:hover{background:var(--tank)}
+.btn.primary{background:var(--pipe);color:var(--bg);border-color:var(--pipe)}
+.btn.sm{padding:3px 8px;font-size:11px;margin-left:8px}
+.presets{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.presets .lbl{font:500 12px var(--f-mono);color:var(--muted)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode-opt{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;border:1px solid var(--rule);padding:10px 12px;cursor:pointer;background:var(--bg)}
+.mode-opt input{grid-row:1/3;margin-top:4px}
+.mode-opt span{font-size:13px;color:var(--muted);grid-column:2}
+.mode-opt:has(input:checked){border-color:var(--pipe);outline:2px solid var(--pipe)}
+.plan{border-top:2px dashed var(--signal);padding-top:12px}
+.tc-out{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tc-out div,.rbox{border:1px solid var(--rule);background:var(--bg);padding:8px 10px;display:grid;gap:2px;min-width:0}
+.k{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tc-out b,.rbox b{font:600 22px var(--f-display);letter-spacing:.02em;overflow-wrap:anywhere}
+.result{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0 14px}
+.rbox.big{grid-column:1/-1;border:2px solid var(--ink);background:var(--paper)}
+.rbox.big b{font-size:44px;color:var(--pipe)}
+.rbox small{font-size:12.5px;color:var(--muted)}
+.pill{font:500 10px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);color:var(--muted);padding:0 5px;margin-left:4px;white-space:nowrap}
+tr.sec td{background:var(--tank);font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+tr.off td{opacity:.45}
+input.qty{width:84px;padding:4px 6px;font-size:13px;text-align:right}
+td.basis{font-size:12px;color:var(--muted);min-width:220px}
+.bar{display:inline-block;width:90px;height:8px;background:var(--rule);vertical-align:middle}
+.bar i{display:block;height:100%;background:var(--pipe);width:0}
+.seedbtns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px;align-items:center}
+.plan-out{border:2px dashed var(--signal);background:var(--paper);padding:10px 16px;margin:12px 0}
+.plan-out h4{margin-top:4px}
+#wl{min-width:980px}
+@media (max-width:760px){.grid3,.modes{grid-template-columns:1fr}.tc-out{grid-template-columns:1fr 1fr}.result{grid-template-columns:1fr 1fr}.rbox.big b{font-size:34px}}
+</style>
+
+<div class="wrap">
+<header class="tb">
+  <div class="main">
+    <div class="kicker">Budget calculator · measured token counts from the logs repo</div>
+    <h1>Experiment Cost Calculator</h1>
+    <p class="lede">Enter your own prices. The page turns the token counts measured in the WSP logs into dollars, for OpenAI API billing and for a Codex plan. It also counts tokens in text you paste.</p>
+  </div>
+  <div class="meta">
+    TOKENS <b>from run.json (exact)</b><br>
+    TOKENIZER <b id="tokname">loading…</b><br>
+    PRICES <b>yours (none preset)</b><br>
+    GPU <b>my estimates, editable</b>
+  </div>
+</header>
+
+<div class="note warn prose"><b>Read first.</b> This page holds no real price list. Every price field starts as a placeholder tier. Replace it with the current figures from your own OpenAI pricing page or plan. Rows marked <span class="m">exact</span> come from <span class="m">audit.usage</span> in the logs. Rows marked <span class="m">estimate</span> are my projections and you can edit them.</div>
+
+<!-- PRICES -->
+<h2><span class="tag">1</span>Prices and mode</h2>
+<div class="panel">
+  <div class="modes" role="radiogroup" aria-label="Billing mode">
+    <label class="mode-opt"><input type="radio" name="mode" id="mode-api" value="api" checked> <b>OpenAI API</b><span>Pay per token. Also applies to the Codex CLI when it runs on an API key.</span></label>
+    <label class="mode-opt"><input type="radio" name="mode" id="mode-plan" value="plan"> <b>Codex on a plan</b><span>Usage comes from a subscription allowance, not per-token billing.</span></label>
+  </div>
+
+  <div class="grid3">
+    <div class="field"><label for="p-unc">Input, uncached ($ per 1M tokens)</label><input id="p-unc" type="number" min="0" step="0.01" value="5"></div>
+    <div class="field"><label for="p-cac">Input, cached ($ per 1M tokens)</label><input id="p-cac" type="number" min="0" step="0.01" value="0.5"></div>
+    <div class="field"><label for="p-out">Output incl. reasoning ($ per 1M tokens)</label><input id="p-out" type="number" min="0" step="0.01" value="30"></div>
+  </div>
+  <div class="presets">
+    <span class="lbl">Placeholder tiers, not real prices:</span>
+    <button type="button" class="btn" data-preset="1,0.1,8">Low</button>
+    <button type="button" class="btn" data-preset="5,0.5,30">Mid</button>
+    <button type="button" class="btn" data-preset="15,1.5,75">High</button>
+  </div>
+
+  <div class="grid3">
+    <div class="field"><label for="contingency">Contingency multiplier</label><input id="contingency" type="number" min="1" step="0.5" value="3"><small>The repo counts only reported runs. Unreported trial runs are listed in RESULTS_excerpt.md. 3 to 5 is my inference.</small></div>
+    <div class="field"><label for="gpu-price">GPU price ($ per hour)</label><input id="gpu-price" type="number" min="0" step="0.1" value="2"></div>
+    <div class="field check"><label><input type="checkbox" id="no-cache"> Bill cached input at the uncached price</label><small>Tick this if your setup does not get cache discounts.</small></div>
+  </div>
+
+  <div id="plan-box" class="plan" hidden>
+    <h4>Codex plan allowance (you enter these)</h4>
+    <div class="grid3">
+      <div class="field"><label for="plan-price">Plan price ($ per month)</label><input id="plan-price" type="number" min="0" step="1" placeholder="e.g. your plan price"></div>
+      <div class="field"><label for="plan-api-eq">Included usage per month (API-equivalent $)</label><input id="plan-api-eq" type="number" min="0" step="1" placeholder="your plan's allowance"></div>
+      <div class="field"><label for="plan-turns">Allowed Codex turns per window</label><input id="plan-turns" type="number" min="0" step="1" placeholder="turns per window"></div>
+    </div>
+    <p class="hint">Plan limits are set by OpenAI and change. Look up yours, then enter the numbers. Leave a field empty to skip that estimate.</p>
+  </div>
+</div>
+
+<!-- TOKEN COUNTER -->
+<h2><span class="tag">2</span>Token counter</h2>
+<div class="panel">
+  <p class="hint">Paste a prompt, or a list of weights. The count uses the <span class="m">o200k_base</span> tokenizer when it loads. If it does not load, the page uses an estimate that I calibrated on the repo: 0.61 tokens per character for number-heavy text and 0.25 for prose.</p>
+  <div class="field"><label for="tc-text">Text to count</label><textarea id="tc-text" rows="6" spellcheck="false" placeholder="Paste a prompt or weights here"></textarea></div>
+  <div class="tc-out" id="tc-out" aria-live="polite">
+    <div><span class="k">Tokens</span><b id="tc-tok">0</b></div>
+    <div><span class="k">Characters</span><b id="tc-chr">0</b></div>
+    <div><span class="k">Numbers found</span><b id="tc-num">0</b></div>
+    <div><span class="k">Tokens per number</span><b id="tc-tpn">–</b></div>
+    <div><span class="k">Method</span><b id="tc-meth">–</b></div>
+  </div>
+  <div class="grid3">
+    <div class="field"><label for="ci-name">Item name</label><input id="ci-name" type="text" value="My prompt"></div>
+    <div class="field"><label for="ci-calls">Calls (separate conversations)</label><input id="ci-calls" type="number" min="1" step="1" value="1"></div>
+    <div class="field"><label for="ci-over">Codex overhead per call (tokens)</label><input id="ci-over" type="number" min="0" step="100" value="3500"><small>Measured: Codex reported about 3.5k more input tokens than the raw prompt.</small></div>
+    <div class="field"><label for="ci-out">Output tokens per call</label><input id="ci-out" type="number" min="0" step="100" value="2000"></div>
+    <div class="field"><label for="ci-cache">Cached share of input (%)</label><input id="ci-cache" type="number" min="0" max="100" step="5" value="0"></div>
+    <div class="field"><label for="ci-turns">Turns per call</label><input id="ci-turns" type="number" min="1" step="1" value="1"></div>
+  </div>
+  <button type="button" class="btn primary" id="ci-add">Add to the workload</button>
+  <span class="hint" id="ci-msg"></span>
+</div>
+
+<!-- WORKLOAD -->
+<h2><span class="tag">3</span>Workload</h2>
+<p class="prose">Tick the rows you want. Change the quantity where a row has one. Token figures are millions. "Model hours" is model time only. It leaves out sandbox time and forward passes, so the real wall time in the READMEs is longer.</p>
+<div class="seedbtns"><span class="lbl k">Quick select</span>
+<button type="button" class="btn" data-seeds="C,A,D">First phase (C, A, D)</button>
+<button type="button" class="btn" data-seeds="A,B,C,D,E,F">All six seeds</button>
+<button type="button" class="btn" data-seeds="WSP">Original WSP</button>
+<button type="button" class="btn" data-seeds="REF">References</button>
+<button type="button" class="btn" data-seeds="">Clear</button></div>
+<div class="tw"><table id="wl">
+<thead><tr><th></th><th>Item</th><th class="n">Qty</th><th>Unit</th><th class="n">Turns</th><th class="n">Uncached in (M)</th><th class="n">Cached in (M)</th><th class="n">Out (M)</th><th class="n">Model h</th><th class="n">Cost</th><th>Share</th></tr></thead>
+<tbody id="wl-body"></tbody>
+</table></div>
+
+<h3 class="plain">GPU and compute items</h3>
+<div class="tw"><table id="gpu">
+<thead><tr><th></th><th>Item</th><th class="n">Qty</th><th>Unit</th><th class="n">GPU h per unit</th><th>Basis</th><th class="n">Cost</th></tr></thead>
+<tbody id="gpu-body"></tbody>
+</table></div>
+
+<!-- RESULT -->
+<h2><span class="tag">4</span>Result</h2>
+<div class="result" id="result" aria-live="polite">
+  <div class="rbox big"><span class="k">Total with contingency</span><b id="r-total">–</b><small id="r-sub"></small></div>
+  <div class="rbox"><span class="k">LLM, one pass</span><b id="r-llm">–</b></div>
+  <div class="rbox"><span class="k">GPU, one pass</span><b id="r-gpu">–</b></div>
+  <div class="rbox"><span class="k">Turns</span><b id="r-turns">–</b></div>
+  <div class="rbox"><span class="k">Tokens (in / out)</span><b id="r-tok">–</b></div>
+  <div class="rbox"><span class="k">Cached share of input</span><b id="r-cs">–</b></div>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Component</th><th class="n">Tokens (M)</th><th class="n">Price ($/M)</th><th class="n">Cost</th></tr></thead>
+<tbody id="brk"></tbody></table></div>
+<div class="plan-out" id="plan-out" hidden></div>
+<div class="note prose"><b>Reading the bill.</b> Most of the input is cached. Each turn re-reads the whole conversation, so long conversations cost far more than short ones. The measured p50c math run used 5.4M input tokens and only 0.15M output tokens.</div>
+
+<h2><span class="tag">5</span>Where the numbers come from</h2>
+<div class="prose">
+<ul>
+  <li><b>Exact rows.</b> The sum of <span class="m">audit.usage</span> in every <span class="m">run.json</span>, taking the largest value in each conversation, because the post's README says tokens accumulate inside one conversation. Cached input is a subset of input. Reasoning tokens are a subset of output.</li>
+  <li><b>Check.</b> My own count with <span class="m">o200k_base</span> gave 70,254 tokens for the Experiment 1 prompt. Codex reported 73,749. For Experiment 2: 96,296 vs 99,791. For Experiment 4: 351,708 vs 355,201. The gap is about 3.5k tokens of fixed overhead.</li>
+  <li><b>Seed rows.</b> Built from those exact runs: Seed C uses the p50c run, Seed E uses one attention-tool conversation (about 19 turns), Seeds A and B use an Experiment 5 reply (about 6k in, 25k out), Seed D uses the Experiment 1 prompt size (73.7k in, 1.7k out).</li>
+  <li><b>GPU rows.</b> My estimates, not measurements. The Qwen evaluation estimate follows from the 93% truncation rate at a 32,768-token cap, which makes each MATH-500 evaluation about 60M generated tokens. The PPO rate is an assumption.</li>
+  <li><b>Not modelled.</b> Failed retries, tool servers, storage, and any price tier, long-context surcharge or batch discount your account may have.</li>
+</ul>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gpt-tokenizer@2.8.1/dist/o200k_base.js"></script>
+<script>
+(function(){
+function $(id){return document.getElementById(id);}
+function num(id,d){var v=parseFloat($(id).value);return isFinite(v)?v:(d||0);}
+function money(x){if(!isFinite(x))return '–';var a=Math.abs(x);return '$'+x.toLocaleString('en-US',{minimumFractionDigits:a<10?2:0,maximumFractionDigits:a<10?2:0});}
+function f(x,d){return x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+/* ---- workload data (millions of tokens per unit) ---- */
+var rows=[
+ {id:'e1',seed:'WSP',name:'E1 which game',tag:'exact',qty:1,unit:'set',fixed:true,conv:4,turns:4,unc:0.29,cac:0,out:0.0071,h:0.1},
+ {id:'e2',seed:'WSP',name:'E2 diffusion',tag:'exact',qty:1,unit:'set',fixed:true,conv:3,turns:3,unc:0.30,cac:0,out:0.0075,h:0.1},
+ {id:'e3',seed:'WSP',name:'E3 language',tag:'exact',qty:1,unit:'set',fixed:true,conv:6,turns:54,unc:0.28,cac:1.30,out:0.1164,h:1.3},
+ {id:'e4',seed:'WSP',name:'E4 fix the car',tag:'exact',qty:1,unit:'set',fixed:true,conv:1,turns:1,unc:0.36,cac:0,out:0.0101,h:0.1},
+ {id:'e5',seed:'WSP',name:'E5 MinAtar from zero',tag:'exact',qty:1,unit:'set',fixed:true,conv:3,turns:3,unc:0.01,cac:0.01,out:0.0735,h:0.5},
+ {id:'e6',seed:'WSP',name:'E6 Go (4 budgets)',tag:'exact',qty:1,unit:'set',fixed:true,conv:4,turns:176,unc:0.39,cac:11.8,out:0.2082,h:2.9},
+ {id:'e7',seed:'WSP',name:'E7 sycophancy (5 rounds)',tag:'exact',qty:1,unit:'set',fixed:true,conv:15,turns:322,unc:1.10,cac:28.59,out:1.1057,h:12.7},
+ {id:'e8',seed:'WSP',name:'E8 Qwen math + Gemma',tag:'exact',qty:1,unit:'set',fixed:true,conv:16,turns:562,unc:1.06,cac:18.94,out:0.5623,h:6.8},
+ {id:'rC',seed:'C',name:'Seed C: new LLM runs at 50 passes',tag:'seed est.',qty:3,unit:'run',conv:4,turns:158,unc:0.26,cac:5.18,out:0.15,h:1.8},
+ {id:'rA',seed:'A',name:'Seed A: zero-feedback replies',tag:'seed est.',qty:30,unit:'reply',conv:1,turns:1,unc:0.006,cac:0,out:0.025,h:0.15},
+ {id:'rD',seed:'D',name:'Seed D: one net per conversation',tag:'seed est.',qty:200,unit:'net',conv:1,turns:1,unc:0.0737,cac:0,out:0.0017,h:0.03},
+ {id:'rB',seed:'B',name:'Seed B: written-network replies',tag:'seed est.',qty:30,unit:'reply',conv:1,turns:1,unc:0.006,cac:0,out:0.025,h:0.15},
+ {id:'rE',seed:'E',name:'Seed E: attention-tool conversations',tag:'seed est.',qty:30,unit:'organism',conv:1,turns:19,unc:0.097,cac:1.24,out:0.053,h:0.6},
+ {id:'rF',seed:'F',name:'Seed F: SPD toy study',tag:'seed est.',qty:1,unit:'study',conv:3,turns:40,unc:0.3,cac:0.6,out:0.1,h:0.5},
+ {id:'x1',seed:'REF',name:'Reference: one p50c math run',tag:'exact',qty:1,unit:'run',conv:4,turns:158,unc:0.26,cac:5.18,out:0.15,h:1.8},
+ {id:'x2',seed:'REF',name:'Reference: one Go 50-pass run',tag:'exact',qty:1,unit:'run',conv:1,turns:90,unc:0.27,cac:7.84,out:0.0915,h:1.3},
+ {id:'x3',seed:'REF',name:'Reference: E7 attention-tool round',tag:'exact',qty:1,unit:'round',conv:3,turns:57,unc:0.29,cac:3.71,out:0.1585,h:1.8}
+];
+var gpuRows=[
+ {id:'gC',seed:'C',name:'Seed C: evaluate loop-surgery variants',tag:'estimate',qty:20,unit:'config',h:2,basis:'About 60M generated tokens per MATH-500 evaluation (93% hit the 32k cap). Assumed 1 to 3 GPU-h each.'},
+ {id:'gB',seed:'B',name:'Seed B: PPO fine-tune from written network',tag:'estimate',qty:15,unit:'run',h:1,basis:'5 seeds x 3 arms at 100M steps. Assumed 0.5 to 2 GPU-h per run.'},
+ {id:'gE',seed:'E',name:'Seed E: train organism models',tag:'repo figure',qty:60,unit:'model',h:0.007,basis:'The repo states about 25 s per Gemma-270M model on one GPU.'},
+ {id:'gD',seed:'D',name:'Seed D: build small policy networks',tag:'estimate',qty:200,unit:'net',h:0.01,basis:'Assumed 36 s per small network.'},
+ {id:'gA',seed:'A',name:'Seed A: retrain PPO baselines (optional)',tag:'estimate',qty:0,unit:'run',h:1,basis:'Set to 0 if you reuse the published scores.'}
+];
+var enabled={};
+var custom=[];
+function setSeeds(list){
+  var set={};list.forEach(function(s){set[s]=1;});
+  rows.concat(gpuRows).forEach(function(r){enabled[r.id]=!!set[r.seed];});
+  build();calc();
+}
+rows.concat(gpuRows).forEach(function(r){enabled[r.id]=(r.seed==='C'||r.seed==='A'||r.seed==='D');});
+
+/* ---- build tables ---- */
+function build(){
+  var b=$('wl-body');b.innerHTML='';
+  function section(title){var tr=document.createElement('tr');tr.className='sec';var td=document.createElement('td');td.colSpan=11;td.textContent=title;tr.appendChild(td);b.appendChild(tr);}
+  function addRow(r,isCustom){
+    var tr=document.createElement('tr');tr.dataset.id=r.id;
+    var c0=document.createElement('td');
+    var cb=document.createElement('input');cb.type='checkbox';cb.checked=isCustom?true:!!enabled[r.id];cb.setAttribute('aria-label','Include '+r.name);
+    cb.disabled=!!isCustom;
+    cb.addEventListener('change',function(){enabled[r.id]=cb.checked;calc();});c0.appendChild(cb);tr.appendChild(c0);
+    var c1=document.createElement('td');c1.innerHTML='<b></b> <span class="pill"></span>';c1.firstChild.textContent=r.name;c1.lastChild.textContent=r.tag;tr.appendChild(c1);
+    var c2=document.createElement('td');c2.className='n';
+    if(r.fixed){c2.textContent='1';}else{var q=document.createElement('input');q.type='number';q.min='0';q.step='1';q.value=r.qty;q.className='qty';q.setAttribute('aria-label','Quantity for '+r.name);q.addEventListener('input',function(){r.qty=Math.max(0,parseFloat(q.value)||0);calc();});c2.appendChild(q);}
+    tr.appendChild(c2);
+    var c3=document.createElement('td');c3.textContent=r.unit;tr.appendChild(c3);
+    ['turns','unc','cac','out','h'].forEach(function(k){var td=document.createElement('td');td.className='n v-'+k;tr.appendChild(td);});
+    var cc=document.createElement('td');cc.className='n v-cost';tr.appendChild(cc);
+    var cs=document.createElement('td');cs.innerHTML='<span class="bar"><i></i></span>';tr.appendChild(cs);
+    if(isCustom){var x=document.createElement('button');x.type='button';x.className='btn sm';x.textContent='Remove';x.addEventListener('click',function(){custom=custom.filter(function(c){return c.id!==r.id;});build();calc();});cs.appendChild(x);}
+    b.appendChild(tr);
+  }
+  section('Original WSP experiments (measured)');rows.filter(function(r){return r.seed==='WSP';}).forEach(function(r){addRow(r);});
+  section('Seed ideas (built from measured runs)');rows.filter(function(r){return /^[A-F]$/.test(r.seed);}).forEach(function(r){addRow(r);});
+  section('Single-run references (measured)');rows.filter(function(r){return r.seed==='REF';}).forEach(function(r){addRow(r);});
+  if(custom.length){section('Your items');custom.forEach(function(r){addRow(r,true);});}
+  var g=$('gpu-body');g.innerHTML='';
+  gpuRows.forEach(function(r){
+    var tr=document.createElement('tr');tr.dataset.id=r.id;
+    var c0=document.createElement('td');var cb=document.createElement('input');cb.type='checkbox';cb.checked=!!enabled[r.id];cb.setAttribute('aria-label','Include '+r.name);cb.addEventListener('change',function(){enabled[r.id]=cb.checked;calc();});c0.appendChild(cb);tr.appendChild(c0);
+    var c1=document.createElement('td');c1.innerHTML='<b></b> <span class="pill"></span>';c1.firstChild.textContent=r.name;c1.lastChild.textContent=r.tag;tr.appendChild(c1);
+    var c2=document.createElement('td');c2.className='n';var q=document.createElement('input');q.type='number';q.min='0';q.step='1';q.value=r.qty;q.className='qty';q.setAttribute('aria-label','Quantity for '+r.name);q.addEventListener('input',function(){r.qty=Math.max(0,parseFloat(q.value)||0);calc();});c2.appendChild(q);tr.appendChild(c2);
+    var c3=document.createElement('td');c3.textContent=r.unit;tr.appendChild(c3);
+    var c4=document.createElement('td');c4.className='n';var hh=document.createElement('input');hh.type='number';hh.min='0';hh.step='0.001';hh.value=r.h;hh.className='qty';hh.setAttribute('aria-label','GPU hours per '+r.unit);hh.addEventListener('input',function(){r.h=Math.max(0,parseFloat(hh.value)||0);calc();});c4.appendChild(hh);tr.appendChild(c4);
+    var c5=document.createElement('td');c5.className='basis';c5.textContent=r.basis;tr.appendChild(c5);
+    var c6=document.createElement('td');c6.className='n v-cost';tr.appendChild(c6);
+    g.appendChild(tr);
+  });
+}
+
+/* ---- calculation ---- */
+function prices(){
+  var pu=num('p-unc'),pc=num('p-cac'),po=num('p-out');
+  if($('no-cache').checked)pc=pu;
+  return {u:pu,c:pc,o:po};
+}
+function calc(){
+  var P=prices(),cont=Math.max(1,num('contingency',1)),gp=num('gpu-price');
+  var all=rows.concat(custom);
+  var T={turns:0,unc:0,cac:0,out:0,h:0,cost:0,conv:0},maxc=0,costs={};
+  all.forEach(function(r){
+    var on=custom.indexOf(r)>=0?true:!!enabled[r.id];
+    var c=on?r.qty*(r.unc*P.u+r.cac*P.c+r.out*P.o):0;
+    costs[r.id]=c;maxc=Math.max(maxc,c);
+    if(on){T.turns+=r.qty*r.turns;T.unc+=r.qty*r.unc;T.cac+=r.qty*r.cac;T.out+=r.qty*r.out;T.h+=r.qty*r.h;T.cost+=c;T.conv+=r.qty*r.conv;}
+  });
+  all.forEach(function(r){
+    var tr=document.querySelector('#wl-body tr[data-id="'+r.id+'"]');if(!tr)return;
+    var on=custom.indexOf(r)>=0?true:!!enabled[r.id];
+    tr.classList.toggle('off',!on);
+    tr.querySelector('.v-turns').textContent=f(r.qty*r.turns,0);
+    tr.querySelector('.v-unc').textContent=f(r.qty*r.unc,2);
+    tr.querySelector('.v-cac').textContent=f(r.qty*r.cac,2);
+    tr.querySelector('.v-out').textContent=f(r.qty*r.out,3);
+    tr.querySelector('.v-h').textContent=f(r.qty*r.h,1);
+    tr.querySelector('.v-cost').textContent=on?money(costs[r.id]):'–';
+    tr.querySelector('.bar i').style.width=(maxc>0?Math.round(100*costs[r.id]/maxc):0)+'%';
+  });
+  var gh=0,gc=0;
+  gpuRows.forEach(function(r){
+    var on=!!enabled[r.id];var h=on?r.qty*r.h:0;gh+=h;gc+=h*gp;
+    var tr=document.querySelector('#gpu-body tr[data-id="'+r.id+'"]');if(!tr)return;
+    tr.classList.toggle('off',!on);tr.querySelector('.v-cost').textContent=on?money(h*gp)+' ('+f(h,1)+' h)':'–';
+  });
+  var base=T.cost+gc,total=base*cont;
+  $('r-total').textContent=money(total);
+  $('r-sub').textContent='one pass '+money(base)+' × contingency '+f(cont,1);
+  $('r-llm').textContent=money(T.cost);
+  $('r-gpu').textContent=money(gc)+' · '+f(gh,0)+' h';
+  $('r-turns').textContent=f(T.turns,0)+' in '+f(T.conv,0)+' conversations';
+  $('r-tok').textContent=f(T.unc+T.cac,2)+'M / '+f(T.out,2)+'M';
+  $('r-cs').textContent=(T.unc+T.cac)>0?f(100*T.cac/(T.unc+T.cac),0)+'%':'–';
+  var br=$('brk');br.innerHTML='';
+  [['Uncached input',T.unc,P.u],['Cached input',T.cac,P.c],['Output (incl. reasoning)',T.out,P.o]].forEach(function(x){
+    var tr=document.createElement('tr');
+    [x[0],f(x[1],2),money(x[2]),money(x[1]*x[2])].forEach(function(t,i){var td=document.createElement('td');td.textContent=t;if(i>0)td.className='n';tr.appendChild(td);});br.appendChild(tr);
+  });
+  var tr2=document.createElement('tr');
+  ['GPU ('+f(gh,0)+' h)','','',money(gc)].forEach(function(t,i){var td=document.createElement('td');td.textContent=t;if(i>0)td.className='n';tr2.appendChild(td);});br.appendChild(tr2);
+  /* plan mode */
+  var plan=$('mode-plan').checked;
+  $('plan-box').hidden=!plan;
+  var po=$('plan-out');po.hidden=!plan;
+  if(plan){
+    var llmTotal=T.cost*cont,lines=[];
+    lines.push('<b>API-equivalent value of this LLM workload:</b> '+money(llmTotal)+' (with contingency).');
+    var pe=num('plan-api-eq'),pp=num('plan-price'),pt=num('plan-turns');
+    if(pe>0){var months=llmTotal/pe;lines.push('<b>Plan months needed:</b> '+f(months,1)+' (at '+money(pe)+' of included usage per month).');if(pp>0)lines.push('<b>Plan cost:</b> '+money(Math.ceil(months*10)/10*pp)+' ('+f(Math.ceil(months*10)/10,1)+' months × '+money(pp)+').');}
+    else lines.push('Enter the plan\'s monthly allowance in API-equivalent dollars to get plan months.');
+    if(pt>0){lines.push('<b>Usage windows needed:</b> '+f(Math.ceil(T.turns*cont/pt),0)+' ('+f(T.turns*cont,0)+' turns at '+f(pt,0)+' turns per window).');}
+    lines.push('Model time alone is about '+f(T.h*cont,0)+' hours. Windows also limit how fast you can run.');
+    po.innerHTML='<h4>Codex plan estimate</h4><ul><li>'+lines.join('</li><li>')+'</li></ul>';
+  }
+  try{localStorage.setItem('ecc-prices',JSON.stringify({u:$('p-unc').value,c:$('p-cac').value,o:$('p-out').value,g:$('gpu-price').value,k:$('contingency').value}));}catch(e){}
+}
+
+/* ---- token counter ---- */
+var haveTok=(typeof GPTTokenizer_o200k_base!=='undefined'&&GPTTokenizer_o200k_base&&GPTTokenizer_o200k_base.encode);
+$('tokname').textContent=haveTok?'o200k_base (loaded)':'estimate (tokenizer not loaded)';
+var lastTok=0;
+function countTokens(t){
+  if(!t)return {n:0,m:'–'};
+  if(haveTok){
+    try{return {n:GPTTokenizer_o200k_base.encode(t).length,m:'o200k_base'};}catch(e){}
+    try{return {n:GPTTokenizer_o200k_base.encode(t,{allowedSpecial:'all'}).length,m:'o200k_base'};}catch(e2){}
+  }
+  var nums=(t.match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi)||[]).join('').length;
+  var share=t.length?nums/t.length:0;
+  var r=0.25+(0.61-0.25)*Math.min(1,share/0.6);
+  return {n:Math.round(t.length*r),m:'estimate'};
+}
+var tcTimer=null;
+function tcUpdate(){
+  var t=$('tc-text').value;var r=countTokens(t);lastTok=r.n;
+  var nums=(t.match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi)||[]).length;
+  $('tc-tok').textContent=f(r.n,0);$('tc-chr').textContent=f(t.length,0);$('tc-num').textContent=f(nums,0);
+  $('tc-tpn').textContent=nums>0?f(r.n/nums,2):'–';$('tc-meth').textContent=r.m;
+}
+$('tc-text').addEventListener('input',function(){clearTimeout(tcTimer);tcTimer=setTimeout(tcUpdate,250);});
+$('ci-add').addEventListener('click',function(){
+  var calls=Math.max(1,num('ci-calls',1)),over=num('ci-over'),turns=Math.max(1,num('ci-turns',1)),out=num('ci-out'),cs=Math.min(100,Math.max(0,num('ci-cache')))/100;
+  var inp=(lastTok+over)*turns/1e6;
+  custom.push({id:'c'+Date.now(),seed:'CUSTOM',name:$('ci-name').value||'My item',tag:'yours',qty:calls,unit:'call',conv:1,turns:turns,unc:inp*(1-cs),cac:inp*cs,out:out*turns/1e6,h:0});
+  $('ci-msg').textContent='Added. See "Your items" in the workload table.';
+  build();calc();
+});
+
+/* ---- wiring ---- */
+['p-unc','p-cac','p-out','contingency','gpu-price','no-cache','plan-price','plan-api-eq','plan-turns'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+document.querySelectorAll('input[name="mode"]').forEach(function(r){r.addEventListener('change',calc);});
+document.querySelectorAll('[data-preset]').forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-preset').split(',');$('p-unc').value=v[0];$('p-cac').value=v[1];$('p-out').value=v[2];calc();});});
+document.querySelectorAll('[data-seeds]').forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-seeds');setSeeds(v?v.split(','):[]);});});
+try{var sv=JSON.parse(localStorage.getItem('ecc-prices')||'null');if(sv){$('p-unc').value=sv.u;$('p-cac').value=sv.c;$('p-out').value=sv.o;$('gpu-price').value=sv.g;$('contingency').value=sv.k;}}catch(e){}
+build();calc();tcUpdate();
+})();
+</script>
