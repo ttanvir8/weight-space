@@ -1,0 +1,919 @@
+<title>Weight-Space Programming Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet report. Prose column on top, wide P&ID sheets that scroll sideways inside their own frame. */
+:root{
+  --bg:#e9ede8; --paper:#f6f8f4; --ink:#16282e; --muted:#58696c; --rule:#c3cdc6;
+  --pipe:#0e5a6b; --signal:#c2410c; --tank:#e3ecea; --hl:#fff3d6;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+    --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+  --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);margin:0;
+  padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+.prose{max-width:72ch}
+header.tb{border:2px solid var(--ink);background:var(--paper);display:grid;grid-template-columns:1fr auto;gap:0}
+header.tb .main{padding:20px 22px;min-width:0}
+header.tb .meta{border-left:2px solid var(--ink);padding:12px 16px;font:500 12px/1.7 var(--f-mono);color:var(--muted);min-width:0}
+header.tb .meta b{color:var(--ink);font-weight:500}
+h1{font:700 clamp(34px,6vw,60px)/0.95 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin:6px 0 10px;text-wrap:balance}
+.kicker{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}
+.lede{font-size:18px;max-width:62ch;margin:0}
+nav.toc{margin:20px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font:500 12px var(--f-mono);color:var(--ink);text-decoration:none;border:1px solid var(--rule);background:var(--paper);padding:5px 9px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--pipe);outline:2px solid var(--pipe);outline-offset:1px}
+h2{font:700 clamp(26px,4vw,38px)/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:56px 0 14px;padding-top:14px;border-top:3px solid var(--ink);text-wrap:balance;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h2 .tag{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.08em}
+h3{font:600 25px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--ink);text-wrap:balance}
+h3 .mode{font:500 11px var(--f-mono);letter-spacing:.1em;border:1px solid currentColor;padding:1px 6px;margin-left:8px;vertical-align:3px;color:var(--pipe)}
+h3 .mode.w{color:var(--signal)}
+h4{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:5px}
+code,.m{font-family:var(--f-mono);font-size:.9em;background:var(--tank);padding:1px 5px}
+.note{border-left:4px solid var(--signal);background:var(--paper);padding:10px 14px;margin:16px 0;max-width:72ch}
+.note.warn{background:var(--hl)}
+.eq{font:500 15px var(--f-mono);background:var(--paper);border:1px solid var(--rule);padding:10px 14px;margin:12px 0;overflow-x:auto;max-width:72ch}
+dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:0;border:1px solid var(--rule);background:var(--paper);margin:10px 0 6px;max-width:900px}
+dl.facts dt,dl.facts dd{margin:0;padding:7px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.facts dt{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--rule)}
+dl.facts dt:last-of-type,dl.facts dd:last-of-type{border-bottom:0}
+dl.gloss{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:0;border:1px solid var(--rule);background:var(--paper)}
+dl.gloss dt,dl.gloss dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.gloss dt{font:500 13px var(--f-mono);border-right:1px solid var(--rule)}
+.tw{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--rule);background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+/* drawing sheets */
+figure.sheet{margin:16px 0 24px;border:2px solid var(--ink);background:var(--paper)}
+figure.sheet .st{display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding:7px 14px;font:500 12px var(--f-mono);color:var(--muted)}
+figure.sheet .st b{font:600 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+figure.sheet .sc{overflow-x:auto;padding:6px 0 0}
+figure.sheet svg{display:block}
+figure.sheet .sf{border-top:1px solid var(--rule);padding:6px 14px;font:400 12px var(--f-mono);color:var(--muted)}
+figure.sheet.prog .st{background:var(--tank)}
+svg .sh{fill:var(--paper);stroke:var(--ink);stroke-width:2}
+svg .shf{fill:var(--ink);stroke:none}
+svg .tk{fill:var(--tank);stroke:var(--ink);stroke-width:2}
+svg .th{fill:none;stroke:var(--ink);stroke-width:1.5}
+svg .pipe{fill:none;stroke:var(--pipe);stroke-width:2.4}
+svg .sig{fill:none;stroke:var(--signal);stroke-width:1.6;stroke-dasharray:6 4}
+svg .lab{fill:var(--ink);font:600 12px var(--f-body);text-anchor:middle}
+svg .lab2{fill:var(--ink);font:400 11.5px var(--f-body);text-anchor:middle}
+svg .tg{fill:var(--muted);font:500 10.5px var(--f-mono);text-anchor:middle;letter-spacing:.04em}
+svg .tgi{fill:var(--ink);font:500 10px var(--f-mono);text-anchor:middle}
+svg .el{fill:var(--muted);font:500 10.5px var(--f-mono)}
+figure.prog svg .lab,figure.prog svg .lab2{font-family:var(--f-mono)}
+figure.prog svg .lab{font-size:11px;font-weight:500}
+figure.prog svg .lab2{font-size:11px}
+svg .lab,svg .lab2,svg .tg,svg .el{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.legend td svg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){header.tb{grid-template-columns:1fr}header.tb .meta{border-left:0;border-top:2px solid var(--ink)}.two{grid-template-columns:1fr}dl.facts{grid-template-columns:1fr}dl.facts dt{border-right:0;border-bottom:0;padding-bottom:0}}
+@media (max-width:520px){dl.gloss{grid-template-columns:1fr}dl.gloss dt{border-right:0;border-bottom:0;padding-bottom:0}}
+</style>
+
+<div class="wrap">
+<header class="tb">
+  <div class="main">
+    <div class="kicker">Explained in Simplified Technical English · with P&amp;ID sheets</div>
+    <h1>Weight-Space Programming</h1>
+    <p class="lede">A large language model reads and writes the weights of a neural network. It does not use gradient descent. This guide explains the theory, the eight experiments, and the process of each one as a P&amp;ID and as a program flow.</p>
+  </div>
+  <div class="meta">
+    SOURCE <b>"Sparks of Weight-Space Programming"</b><br>
+    AUTHORS <b>Takehi, Teoh, Zhang, Khattab</b><br>
+    LAB <b>MIT CSAIL</b><br>
+    AGENT <b>Astra</b><br>
+    SHEETS <b>1 master + 8 × 2</b>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#idea">1 Idea</a><a href="#terms">2 Terms</a><a href="#theory">3 Theory</a><a href="#harness">4 Harness</a><a href="#legend">5 Symbols</a><a href="#master">6 Master</a>
+  <a href="#e1">E1</a><a href="#e2">E2</a><a href="#e3">E3</a><a href="#e4">E4</a><a href="#e5">E5</a><a href="#e6">E6</a><a href="#e7">E7</a><a href="#e8">E8</a><a href="#summary">Summary</a><a href="#limits">Limits</a>
+</nav>
+
+<div class="note warn prose">
+  <b>How to read this guide.</b> The text follows the rules of ASD-STE100 as closely as possible: short sentences, one idea in each sentence, active voice, and the same word for the same thing. A human did not run the official STE checker on it. The facts come from the blog post. The step-by-step diagrams are a reconstruction of the process that the post describes. The post does not publish every prompt, so some small steps are inferred. Inferred points are marked "(inference)".
+</div>
+
+<!-- ============ 1 IDEA ============ -->
+<h2 id="idea"><span class="tag">§1</span>The idea</h2>
+<div class="prose">
+<p>A neural network is a large set of numbers. Each number is a <b>weight</b>. The weights hold everything the network knows.</p>
+<p>Normally, people change weights with <b>training</b>. Training uses gradient descent. Gradient descent changes the weights in many small steps. It needs data, a loss function, and much computer time.</p>
+<p><b>Weight-Space Programming</b> is a different way. A general-purpose language model gets the weights as text. The model reads the numbers. The model thinks about what the network does. Then the model writes new numbers, or it writes a statement about the network.</p>
+<p>The model does not train the network. It does not run a training loop. It works like a programmer who reads and writes a program. The "program" is the set of weights.</p>
+<p>The authors give this a name: <b>weight-space programming</b>. They show two directions:</p>
+<ul>
+  <li><b>Read.</b> The model looks at weights and says what the network does. Examples: which game, which shape, which language, which model is sycophantic.</li>
+  <li><b>Write.</b> The model changes weights, or it writes all weights from zero. Examples: fix a failing policy, write a game player, fix a looping language model.</li>
+</ul>
+<p>The authors call the model agent <b>Astra</b>. Astra is a general-purpose language model. It runs inside a small <b>harness</b>. The harness gives Astra a text channel and, in some experiments, a Python sandbox and a limited number of forward passes.</p>
+</div>
+
+<!-- ============ 2 TERMS ============ -->
+<h2 id="terms"><span class="tag">§2</span>Terms</h2>
+<p class="prose">Each term has one meaning in this guide.</p>
+<dl class="gloss">
+  <dt>weight</dt><dd>A number in a network. It sets how much one unit changes another unit.</dd>
+  <dt>network</dt><dd>A neural network. It has layers of units that are linked by weights.</dd>
+  <dt>layer</dt><dd>One group of units. A layer takes numbers in and gives numbers out.</dd>
+  <dt>MLP</dt><dd>Multi-layer perceptron. A network where each layer is a matrix multiplication followed by an activation function.</dd>
+  <dt>activation</dt><dd>A fixed function after a layer. <span class="m">tanh</span> gives numbers from −1 to 1. <span class="m">ReLU</span> sets negative numbers to 0.</dd>
+  <dt>logit</dt><dd>A raw output number. A higher logit means the network prefers that action.</dd>
+  <dt>policy</dt><dd>A network that picks an action from an observation. Games use policies.</dd>
+  <dt>PPO</dt><dd>Proximal Policy Optimization. A common training method for policies. It is the baseline in this work.</dd>
+  <dt>gradient descent</dt><dd>The usual training method. It changes weights in small steps to reduce a loss.</dd>
+  <dt>forward pass</dt><dd>One run of the network on an input. The network gives an output. It does not change any weight.</dd>
+  <dt>episode</dt><dd>One full play of a game or task, from start to end.</dd>
+  <dt>local minimum</dt><dd>A weak solution that training cannot leave. A small change makes the result worse, so training stays there.</dd>
+  <dt>LLM</dt><dd>Large language model. A model that reads and writes text.</dd>
+  <dt>token</dt><dd>A piece of text that an LLM reads or writes. A token limit stops long output.</dd>
+  <dt>transformer</dt><dd>A network made of blocks. Each block has attention heads and an MLP.</dd>
+  <dt>attention head</dt><dd>A part of a transformer block. It moves information from earlier tokens to the current token.</dd>
+  <dt>induction (copying) head</dt><dd>An attention head that repeats text it saw before. It looks for the earlier token that followed the same token.</dd>
+  <dt>direction</dt><dd>A vector in the hidden space of a network. A network can write a behavior along one direction.</dd>
+  <dt>DDPM</dt><dd>Denoising diffusion probabilistic model. It makes an image from noise in many small steps.</dd>
+  <dt>sycophancy</dt><dd>A model habit: it agrees with the user, even when the user is wrong.</dd>
+  <dt>harness</dt><dd>The set of tools and rules around the LLM in one experiment.</dd>
+  <dt>one-shot</dt><dd>The LLM gives the full answer in one reply. It gets no feedback.</dd>
+  <dt>P&amp;ID</dt><dd>Piping and Instrumentation Diagram. A drawing that shows the equipment, the pipes, and the instruments of a process.</dd>
+</dl>
+
+<!-- ============ 3 THEORY ============ -->
+<h2 id="theory"><span class="tag">§3</span>Theory</h2>
+<div class="prose">
+<h3>3.1 What a network computes</h3>
+<p>Each layer of an MLP does the same job. It multiplies the input by a weight matrix. It adds a bias. Then it applies an activation.</p>
+<div class="eq">output = activation( W × input + b )</div>
+<p>Each row of <span class="m">W</span> belongs to one unit. The row shows which input numbers that unit uses. Large values mean strong use. Small values mean weak use. Because of this, the weights show a clear shape. A reader can see which inputs matter without a single run.</p>
+
+<h3>3.2 Why an LLM can read weights</h3>
+<p>The post gives these reasons. Some are inference.</p>
+<ul>
+  <li><b>Weights have geometry.</b> In a game network, the first-layer weights for the "agent" input channel are large where the agent moves. The output layer separates the actions that matter in that game.</li>
+  <li><b>Weights are text.</b> The model reads thousands of numbers as tokens. It can find patterns, add, and compare.</li>
+  <li><b>The model knows network design.</b> It knows about attention, induction heads, and local minima. It can apply this knowledge to a table of numbers.</li>
+  <li><b>The model can write code.</b> In a sandbox, it can compute properties of weight matrices. Astra found copying heads this way. It reinvented a known method without a hint (Experiment 3).</li>
+</ul>
+
+<h3>3.3 Why an LLM can write weights</h3>
+<ul>
+  <li><b>A network is a program.</b> Each layer is a step. Hand-written weights can make each step do a clear job. Example: layer 1 finds where the ball will land. Layer 2 moves the paddle there (Experiment 5).</li>
+  <li><b>Zero is a clean start.</b> In the write experiments, all weights start at zero. The model fills in only the weights that matter.</li>
+  <li><b>A small edit can remove a fault.</b> If a fault comes from one direction or one path, the model can add a path or delete a direction. It then changes very few weights (3.5% in Experiment 4, 0.016% in Experiment 8).</li>
+  <li><b>Feedback can improve a draft.</b> With forward passes, the model can test its draft, find the loss, and edit the cause (Experiments 6 and 8).</li>
+</ul>
+
+<h3>3.4 Reading, writing, and feedback</h3>
+<p>Each experiment changes two settings. The first setting is the task type (read or write). The second setting is the feedback level.</p>
+<ol>
+  <li><b>No feedback.</b> One reply. No tools. The model must be right the first time (E1, E2, E4, E5).</li>
+  <li><b>Tools without the network.</b> The model gets a Python sandbox. It can analyze the weights. It cannot run the network (E3).</li>
+  <li><b>Limited probes.</b> The model can use a small number of forward passes or attention reads (E6, E7, E8).</li>
+</ol>
+<p>The results show a pattern. More feedback helps in the hard cases. In Experiment 8, 10 and 25 forward passes did little. 50 forward passes gave a large gain. In Experiment 7, weights alone failed. A few attention reads solved it.</p>
+
+<h3>3.5 What weight editing can and cannot do</h3>
+<p>An edit can remove an obstacle. It cannot add an ability that the network does not have. Gemma 3 270M did not improve in Experiment 8. It rarely loops, and its errors are ordinary arithmetic errors. No single part could be switched off.</p>
+
+<h3>3.6 Why this matters (the authors' list)</h3>
+<ul>
+  <li><b>Audit without running.</b> Find hidden behaviors or backdoors from the weights alone.</li>
+  <li><b>Cheaper optimization.</b> Write a good starting network in one reply, instead of a long training run.</li>
+  <li><b>Targeted steering and unlearning.</b> Edit very few weights. This can avoid the forgetting that fine-tuning can cause.</li>
+  <li><b>Self-improvement and merging.</b> A model could inspect or change its own network, or move a circuit from one architecture to another.</li>
+</ul>
+</div>
+
+<!-- ============ 4 HARNESS ============ -->
+<h2 id="harness"><span class="tag">§4</span>The harness: what Astra can use</h2>
+<p class="prose">The harness is different in each experiment. The table shows the rules.</p>
+<div class="tw"><table>
+<thead><tr><th>Exp</th><th>Task</th><th>Tools</th><th>May run the network?</th><th>Limit</th></tr></thead>
+<tbody>
+<tr><td>E1</td><td>Read</td><td>Text only</td><td>No</td><td>One reply</td></tr>
+<tr><td>E2</td><td>Read</td><td>Text only</td><td>No (told not to)</td><td>One reply</td></tr>
+<tr><td>E3</td><td>Read</td><td>Python sandbox</td><td>No (checked by the authors)</td><td>100 runs</td></tr>
+<tr><td>E4</td><td>Write (edit)</td><td>Text only</td><td>No</td><td>One reply</td></tr>
+<tr><td>E5</td><td>Write (from zero)</td><td>Text only</td><td>No</td><td>One reply</td></tr>
+<tr><td>E6</td><td>Write (from zero)</td><td>Python sandbox</td><td>Yes, by forward passes</td><td>0 to 50 passes</td></tr>
+<tr><td>E7</td><td>Read</td><td>Attention tool</td><td>Attention weights only</td><td>16 texts, 20 runs</td></tr>
+<tr><td>E8</td><td>Write (edit)</td><td>Python kernel, no GPU</td><td>Yes, by forward passes</td><td>10, 25, or 50 passes</td></tr>
+</tbody></table></div>
+
+<!-- ============ 5 LEGEND ============ -->
+<h2 id="legend"><span class="tag">§5</span>How to read the sheets</h2>
+<div class="prose">
+<p>Each experiment has two sheets. Both sheets use P&amp;ID symbols. Both sheets flow from left to right.</p>
+<ul>
+  <li><b>Process sheet.</b> It shows the steps of the algorithm. The symbols have their usual plant meaning.</li>
+  <li><b>Programmer sheet.</b> It shows the same flow as program parts. Each symbol is a variable, a function, a branch, a test, or a mutation. Labels use code names.</li>
+</ul>
+<p>Solid teal lines are "pipes". They carry the main flow of data. Dashed orange lines are "signal lines". They carry measurements and feedback. A tag such as <span class="m">P-101</span> names one item.</p>
+</div>
+<div class="tw legend"><table>
+<thead><tr><th>Symbol</th><th>Plant item</th><th>Process sheet means</th><th>Programmer sheet means</th></tr></thead>
+<tbody>
+<tr><td><svg width="96" height="70" data-sym="T"></svg></td><td>Tank</td><td>A store of data: weights, practice sets, a finished network.</td><td>A variable or a data structure.</td></tr>
+<tr><td><svg width="96" height="70" data-sym="P"></svg></td><td>Pump</td><td>A step that moves and changes data: the LLM, or a reading step.</td><td>A function call.</td></tr>
+<tr><td><svg width="96" height="70" data-sym="V"></svg></td><td>Control valve</td><td>A decision. The flow goes one way or the other.</td><td><span class="m">if</span> or <span class="m">while</span>.</td></tr>
+<tr><td><svg width="96" height="70" data-sym="I"></svg></td><td>Instrument</td><td>A measurement or a test: a score, a probe, a comparison.</td><td>An assertion, a metric, or a test.</td></tr>
+<tr><td><svg width="96" height="70" data-sym="R"></svg></td><td>Reactor</td><td>A step that changes the weights.</td><td>A mutation, such as <span class="m">net.w[i] += d</span>.</td></tr>
+<tr><td><svg width="96" height="70" data-sym="S"></svg></td><td>Terminal</td><td>An input or an output of the process.</td><td>An argument or a return value.</td></tr>
+<tr><td><svg width="96" height="20" data-sym="pipe"></svg></td><td>Process pipe</td><td>Main data flow.</td><td>Value passed to the next step.</td></tr>
+<tr><td><svg width="96" height="20" data-sym="sig"></svg></td><td>Signal line</td><td>Measurement or feedback.</td><td>Result sent back, or a loop.</td></tr>
+</tbody></table></div>
+
+<!-- ============ 6 MASTER ============ -->
+<h2 id="master"><span class="tag">§6</span>Master pipeline</h2>
+<div class="prose">
+<p>All eight experiments follow one general pipeline. The steps are:</p>
+<ol>
+  <li>The user gives a task in words, and the network as weights.</li>
+  <li>The harness writes the weights as plain text.</li>
+  <li>Astra reads the task and the weights, and reasons about them.</li>
+  <li>The harness allows tools, or it does not. If tools are allowed, Astra makes a probe. A probe is a forward pass, an attention read, or a sandbox calculation. The probe result goes back to Astra.</li>
+  <li>Astra gives an answer in words (a read task), or it writes new weights (a write task).</li>
+  <li>The authors score the result. For a read task, they compare it with the truth. For a write task, they run the network.</li>
+</ol>
+</div>
+<div class="dwg" data-id="m0p"></div>
+<div class="dwg" data-id="m0c"></div>
+
+<!-- ============ E1 ============ -->
+<h2><span class="tag">§7</span>The eight experiments</h2>
+
+<h3 id="e1">Experiment 1 · Name the game from the weights<span class="mode">READ</span></h3>
+<div class="prose">
+<p><b>Goal.</b> Show that Astra can say which game a policy plays, from weights alone.</p>
+</div>
+<dl class="facts">
+  <dt>Networks</dt><dd>Four PPO policies: Breakout, Pong, Pac-Man, Freeway.</dd>
+  <dt>Architecture</dt><dd>MLP 500 → 32 → 32 → 5, tanh. 17,253 weights. All four are the same.</dd>
+  <dt>Input</dt><dd>10×10 grid, 5 channels: agent, moving objects, reward targets, obstacles, previous frame.</dd>
+  <dt>Output</dt><dd>5 logits: no-op, up, down, left, right.</dd>
+  <dt>Training</dt><dd>PPO, 1 billion steps, the same settings for each game. Best of 3 seeds.</dd>
+  <dt>Harness</dt><dd>All weights as text. Grid and actions described. No game names. One reply.</dd>
+  <dt>Score</dt><dd>Is the game name right for each network?</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>The harness writes the weights of one network as text.</li>
+  <li>The harness adds a description of the grid and the five actions. It does not name the game.</li>
+  <li>Astra looks at the first-layer weights of each input channel. It finds where the weights are large.</li>
+  <li>Astra looks at the output layer. It finds which actions the network separates.</li>
+  <li>Astra matches this pattern to the rules of a game. Example: for Breakout, the agent weights are large along the bottom row.</li>
+  <li>Astra names the game.</li>
+</ol>
+<h4>Result</h4>
+<p>Astra named the right game for all four networks (4 of 4).</p>
+<h4>Theory</h4>
+<p>A policy network keeps a trace of the game in its weights. The input weights show where objects matter. The output weights show which moves matter. An LLM that knows the games can match these two traces.</p>
+</div>
+<div class="dwg" data-id="e1p"></div>
+<div class="dwg" data-id="e1c"></div>
+
+<!-- ============ E2 ============ -->
+<h3 id="e2">Experiment 2 · Name the shape a diffusion model draws<span class="mode">READ</span></h3>
+<dl class="facts">
+  <dt>Networks</dt><dd>Three DDPMs. Each one makes one 12×12 grayscale shape: filled circle, square, or triangle.</dd>
+  <dt>Architecture</dt><dd>MLP 160 → 64 → 64 → 144, ReLU. 23,824 weights.</dd>
+  <dt>Input</dt><dd>A noisy image (144 pixels) and the diffusion step as 16 numbers.</dd>
+  <dt>Output</dt><dd>The clean image (144 pixels).</dd>
+  <dt>Training</dt><dd>Adam, 40,000 steps, batch size 512.</dd>
+  <dt>Harness</dt><dd>All weights as text. No shape named. No tools. Astra was told not to compute a forward pass.</dd>
+  <dt>Score</dt><dd>Qualitative. Does Astra name the right shape? The post gives no number.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>The harness writes the weights as text.</li>
+  <li>Astra reads the output layer. Each hidden unit has a row of 144 output weights. Each row draws one piece of the edge of the shape.</li>
+  <li>Astra puts the edge pieces together.</li>
+  <li>Astra names the shape and draws it.</li>
+</ol>
+<h4>Result</h4>
+<p>Astra identified each shape. It drew every shape as an outline. The models make filled shapes.</p>
+<h4>Theory</h4>
+<p>The outline error is useful. It shows that Astra read the geometry of the weights. It did not compute the output of the model. The authors give this as evidence of reading, not running.</p>
+</div>
+<div class="dwg" data-id="e2p"></div>
+<div class="dwg" data-id="e2c"></div>
+
+<!-- ============ E3 ============ -->
+<h3 id="e3">Experiment 3 · Find the language and the copying heads<span class="mode">READ</span></h3>
+<dl class="facts">
+  <dt>Networks</dt><dd>Three character-level transformers. Each has 4 layers, 6 heads per layer, width 384. 7.16 million weights.</dd>
+  <dt>Vocabulary</dt><dd>28 characters: a–z, space, newline.</dd>
+  <dt>Training data</dt><dd>1 billion characters of one corpus: Python code, romaji Japanese (Aozora Bunko), or English Wikipedia.</dd>
+  <dt>Harness</dt><dd>The embedding and output layers are removed. Astra gets only the four blocks. The 384 dimensions have no labels. Python sandbox, up to 100 runs. Astra must not run the network or any layer on any input, even random text. The authors checked every run.</dd>
+  <dt>Tasks</dt><dd>Name the training text of each network. Say what each of the 24 heads does.</dd>
+  <dt>Truth</dt><dd>Run the network on a random string that repeats twice. A copying head scores 0.22 to 0.55. Every other head scores 0.02 or less.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>The harness removes the embedding layer and the output layer.</li>
+  <li>The harness gives the four blocks to Astra as text and as tensors in the sandbox.</li>
+  <li>Astra writes code that analyzes the weight matrices of each head. It looks for the pattern of a copying (induction) head.</li>
+  <li>Astra looks at the last block. It counts the distinct directions that the block writes.</li>
+  <li>Astra decides the language. Example: the romaji network writes in fewer directions, because the corpus has no q, l, v, or x.</li>
+  <li>Astra lists the copying heads.</li>
+  <li>The authors compare the list with the truth from the repeated random string.</li>
+</ol>
+<h4>Result</h4>
+<p>Astra named the right language for all three networks, in both attempts. It named every copying head and no false head. The copying heads were 2.1, 3.1 and 3.5 (Python), 3.3 (romaji), and 3.1 (English).</p>
+<h4>Theory</h4>
+<p>A copying head has a known weight signature. Astra was not told about it. It found a method by itself. A corpus also leaves a trace in the weights: letters that never occur leave fewer output directions.</p>
+</div>
+<div class="dwg" data-id="e3p"></div>
+<div class="dwg" data-id="e3c"></div>
+
+<!-- ============ E4 ============ -->
+<h3 id="e4">Experiment 4 · Fix a failing policy<span class="mode w">WRITE</span></h3>
+<dl class="facts">
+  <dt>Task</dt><dd>Kinetix "car-on-ramp". The car must reverse, then jump over a red strip to reach a blue box.</dd>
+  <dt>Network</dt><dd>Official Kinetix actor: MLP 679 → 128 (ReLU) → five layers of 128 (tanh) → 16. 171,664 weights.</dd>
+  <dt>Input</dt><dd>679 numbers: position, velocity, and shape of each body, and the joints.</dd>
+  <dt>Output</dt><dd>16 logits for motor and thruster actions.</dd>
+  <dt>Training</dt><dd>Official PPO, 1 billion steps. The policy never succeeded in 256 episodes. It drove into the ramp (local minimum).</dd>
+  <dt>Harness</dt><dd>All weights, a scene description, and the result of one recorded episode. Astra must explain the failure and fix only the cause. One reply. No tools.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>Astra reads the weights, the scene, and the one failed episode.</li>
+  <li>Astra decides that the policy sits in a local minimum.</li>
+  <li>Astra designs a small parallel path. The path uses a few units in each layer. It reads the car position and speed.</li>
+  <li>Astra writes the new weights. The edit changes 3.5% of all weights.</li>
+  <li>In use, the new path backs the car up. When the green wheel passes the red strip, the path switches off.</li>
+  <li>The original trained network then does the rest: it jumps and finishes.</li>
+  <li>The authors run 1,024 test episodes.</li>
+</ol>
+<h4>Result</h4>
+<p>Before the edit: 0 successes. After the edit: 1,024 of 1,024 episodes succeeded.</p>
+<h4>Theory</h4>
+<p>The trained network already knew how to finish the task. It only failed at the start. A small gated path fixed the start and left the rest as it was. This is the "remove an obstacle" case.</p>
+</div>
+<div class="dwg" data-id="e4p"></div>
+<div class="dwg" data-id="e4c"></div>
+
+<!-- ============ E5 ============ -->
+<h3 id="e5">Experiment 5 · Write a game player from zero<span class="mode w">WRITE</span></h3>
+<dl class="facts">
+  <dt>Games</dt><dd>MinAtar Breakout, Seaquest, Asterix. 10×10 grid.</dd>
+  <dt>Network</dt><dd>MLP 600 → 32 → 32 → 6, tanh. Every weight starts at zero.</dd>
+  <dt>Harness</dt><dd>Astra gets the game rules, the source code, the input and output layout, and the scoring. It gets no data, no loss, no gradients, and no tools. It cannot run the network. It writes all weights as text in one reply.</dd>
+  <dt>Scoring</dt><dd>1,000 episodes. Sampled actions. Sticky actions 0.1. Cap of 10,000 steps.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>Astra reads the rules and the source code of the game.</li>
+  <li>Astra designs features by hand. Example (Breakout): layer 1 finds where the ball will land.</li>
+  <li>Astra designs the action rule. Example (Breakout): layer 2 moves the paddle to that point.</li>
+  <li>Astra writes the weights of all layers as text.</li>
+  <li>The harness loads the weights into the zero network.</li>
+  <li>The authors play 1,000 episodes and take the mean score.</li>
+  <li>The authors compare the score with PPO at 100 million and 500 million steps.</li>
+</ol>
+<p>The post gives a feature example for Breakout only.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Game</th><th class="n">PPO 100M steps</th><th class="n">PPO 500M steps</th><th class="n">Astra, one reply</th></tr></thead>
+<tbody>
+<tr><td>Breakout</td><td class="n">15.8</td><td class="n">25.3</td><td class="n"><b>517.4</b></td></tr>
+<tr><td>Seaquest</td><td class="n">5.6</td><td class="n"><b>88.9</b></td><td class="n">53.1</td></tr>
+<tr><td>Asterix</td><td class="n">25.8</td><td class="n"><b>55.2</b></td><td class="n">53.2</td></tr>
+</tbody></table></div>
+<div class="prose">
+<h4>Result</h4>
+<p>Astra beat PPO at 100M steps in all three games. In Breakout it scored about 20 times the score of PPO at 500M steps. In Seaquest it scored about 60% of that PPO. In Asterix it nearly matched that PPO.</p>
+<h4>Theory</h4>
+<p>A game rule is simple. A network can encode a rule by hand: find the ball, predict, move. Training must find this rule from reward. Astra can write the rule directly.</p>
+</div>
+<div class="dwg" data-id="e5p"></div>
+<div class="dwg" data-id="e5c"></div>
+
+<!-- ============ E6 ============ -->
+<h3 id="e6">Experiment 6 · Write a Go player (1.5M weights)<span class="mode w">WRITE</span></h3>
+<dl class="facts">
+  <dt>Network</dt><dd>MLP 243 → 512 ×6 → 82, ReLU. 1,480,274 weights, all start at zero.</dd>
+  <dt>Input</dt><dd>243 numbers: the stones of each side and whose turn it is (9×9 board).</dd>
+  <dt>Output</dt><dd>82 logits: one for each point, and one for pass. Illegal moves are masked.</dd>
+  <dt>Sandbox</dt><dd>Python. Astra can read and write weight tensors and analyze them on a CPU. It cannot run the network in the sandbox.</dd>
+  <dt>Forward pass</dt><dd>One call that plays up to 128 games against a practice opponent (random, a REINFORCE network, or a PPO network), or that returns outputs for up to 256 positions.</dd>
+  <dt>Forbidden</dt><dd>Training, fitting weights to data, and search.</dd>
+  <dt>Budget</dt><dd>0 to 50 forward passes.</dd>
+  <dt>Test</dt><dd>2,000 games against each of two small PPO networks (243 → 32 → 32 → 82).</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>Astra reads the Go rules and the input and output layout.</li>
+  <li>In one Python run of 336 lines, Astra builds the network layer by layer:
+    <ul>
+      <li>Early layers mark the stones of each side and the empty points next to them (liberties).</li>
+      <li>Middle layers pass these signals along connected chains. They find groups in danger.</li>
+      <li>The last layer scores each move: capture, save a group, avoid self-atari, do not fill an own eye, prefer strong points.</li>
+    </ul></li>
+  <li>If the budget is 0, stop. This network is the answer.</li>
+  <li>If a forward pass is left: play practice games and read the losses.</li>
+  <li>Astra edits the part of the network that caused the losses.</li>
+  <li>Astra keeps the edit only if the network wins more games.</li>
+  <li>Go to step 3.</li>
+</ol>
+<h4>Result</h4>
+<p>With 0 forward passes, the network won more than half of its games against both small PPO networks. With 50 forward passes, it beat the PPO network of equal size. That PPO network trained on about 20 million games.</p>
+<h4>Theory</h4>
+<p>Go has strong structure: groups, liberties, eyes. A deep network can compute that structure by passing signals along chains. Astra writes the structure first. Then it uses a few passes to tune it. The "keep only if better" rule works like a small hill climb that a human controls in text.</p>
+</div>
+<div class="dwg" data-id="e6p"></div>
+<div class="dwg" data-id="e6c"></div>
+
+<!-- ============ E7 ============ -->
+<h3 id="e7">Experiment 7 · Find the sycophantic model<span class="mode">READ</span></h3>
+<dl class="facts">
+  <dt>Networks</dt><dd>Two copies of Gemma 3 270M, trained the same way on a QA set. One learns to answer correctly. The other learns to agree with the user's suggested answer. Three such pairs.</dd>
+  <dt>Frozen</dt><dd>The input embeddings and the output layers. Astra cannot find the difference there.</dd>
+  <dt>Behavior</dt><dd>The sycophant follows 100% of wrong user guesses. The honest model follows 1–3%.</dd>
+  <dt>Mode A</dt><dd>Weights only.</dd>
+  <dt>Mode B</dt><dd>Astra writes up to 16 texts. It runs both models through an attention tool. The tool returns attention weights only, not outputs. At most 20 runs.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li><b>Mode A.</b> Astra compares the weights of the two models. It finds many differences. It cannot link them to behavior. It failed in all 4 attempts.</li>
+  <li><b>Mode B.</b> Astra writes texts that contain a question and a wrong user suggestion.</li>
+  <li>Astra sends the texts through both models. The tool gives only the attention weights.</li>
+  <li>Astra looks for heads in the middle layers. It measures how much attention goes to the user's suggested answer.</li>
+  <li>Astra says that the model with more attention on the user's answer is the sycophant.</li>
+</ol>
+<h4>Result</h4>
+<p>Mode B found the sycophant in all 3 pairs. For head 10.2, measured from the answer position:</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Model</th><th class="n">Attention on the question's numbers</th><th class="n">Attention on the user's answer</th></tr></thead>
+<tbody>
+<tr><td>Honest</td><td class="n">94.3%</td><td class="n">0.75%</td></tr>
+<tr><td>Sycophant</td><td class="n">3.5%</td><td class="n">85.7%</td></tr>
+</tbody></table></div>
+<div class="prose">
+<h4>Theory</h4>
+<p>A sycophant must look at the user's answer to copy it. This is a behavior that attention can show. The weight difference does not show it clearly, because training changes many weights in small ways. A cheap probe on the right quantity solves the task.</p>
+</div>
+<div class="dwg" data-id="e7p"></div>
+<div class="dwg" data-id="e7c"></div>
+
+<!-- ============ E8 ============ -->
+<h3 id="e8">Experiment 8 · Fix a looping math model<span class="mode w">WRITE</span></h3>
+<dl class="facts">
+  <dt>Network</dt><dd>Qwen3.5-0.8B, loaded in a Python kernel. No GPU.</dd>
+  <dt>Data</dt><dd>7,469 GSM8K and 7,275 MATH practice problems. No test sets.</dd>
+  <dt>Budget</dt><dd>10, 25, or 50 forward passes.</dd>
+  <dt>Evaluation</dt><dd>Thinking mode. Limit of 32,768 tokens. Several samples per problem. Tests: MATH-500, GSM8K, IFEval.</dd>
+  <dt>Problem</dt><dd>The base model loops. In its first 96 practice answers, 85 reached the token limit.</dd>
+</dl>
+<div class="prose">
+<h4>Algorithm</h4>
+<ol>
+  <li>Astra runs the model on practice problems (forward passes).</li>
+  <li>Astra sees that most answers loop until the token limit.</li>
+  <li>Astra traces the loops to one direction. The MLPs of layer 15 and layer 19 write it.</li>
+  <li>When the budget is used, Astra subtracts that direction from 64 output columns in each of the two layers.</li>
+  <li>The edit changes 131,072 weights. This is 0.016% of the model.</li>
+  <li>The authors test the edited model.</li>
+</ol>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Qwen3.5-0.8B</th><th class="n">MATH-500 %</th><th class="n">GSM8K %</th><th class="n">IFEval %</th><th class="n">Hit token limit %</th></tr></thead>
+<tbody>
+<tr><td>Base</td><td class="n">7.9</td><td class="n">13.8</td><td class="n">21.0</td><td class="n">93.0</td></tr>
+<tr><td>Edited, 10 passes</td><td class="n">12.3</td><td class="n">25.7</td><td class="n">49.0</td><td class="n">87.2</td></tr>
+<tr><td>Edited, 25 passes</td><td class="n">14.1</td><td class="n">25.1</td><td class="n">39.9</td><td class="n">86.4</td></tr>
+<tr><td>Edited, 50 passes</td><td class="n"><b>48.1</b></td><td class="n"><b>67.1</b></td><td class="n"><b>62.3</b></td><td class="n"><b>33.1</b></td></tr>
+</tbody></table></div>
+<div class="prose">
+<h4>Result</h4>
+<p>With 10 or 25 passes, the loops barely changed. With 50 passes, the loop rate fell from 93% to 33% and scores rose a lot. IFEval also rose. This shows that the loop problem is not only a math problem. The IFEval score at 25 passes is lower than at 10 passes, so progress is not always steady.</p>
+<h4>Control: Gemma 3 270M</h4>
+<p>Gemma rarely loops (8.5% reached the limit). Astra could not improve its MATH-500 score. It rose from 6.8% to between 7.0% and 7.7%. Astra found ordinary arithmetic and algebra errors, and no single part to switch off.</p>
+<div class="note"><b>Key rule:</b> "Editing weights could remove an obstacle that hid an ability, but it could not add an ability the model lacked."</div>
+<h4>Theory</h4>
+<p>A language model can write a behavior along one direction in its hidden space. If that direction causes loops, the editor can subtract it. The model then keeps all other behavior. This is the same idea as deleting one direction from the weights to remove a behavior.</p>
+</div>
+<div class="dwg" data-id="e8p"></div>
+<div class="dwg" data-id="e8c"></div>
+
+<!-- ============ SUMMARY ============ -->
+<h2 id="summary"><span class="tag">§8</span>All results in one table</h2>
+<div class="tw"><table>
+<thead><tr><th>Exp</th><th>Type</th><th>Size</th><th>Feedback</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>E1</td><td>Read</td><td class="n">17,253</td><td>None</td><td>4 of 4 games named</td></tr>
+<tr><td>E2</td><td>Read</td><td class="n">23,824</td><td>None</td><td>Shapes found; drawn as outline</td></tr>
+<tr><td>E3</td><td>Read</td><td class="n">7.16 M</td><td>Sandbox, no runs</td><td>3 of 3 languages; all copying heads, no false ones</td></tr>
+<tr><td>E4</td><td>Edit</td><td class="n">171,664</td><td>None</td><td>0 → 1,024 of 1,024 episodes; 3.5% of weights</td></tr>
+<tr><td>E5</td><td>Write</td><td class="n">600→32→32→6</td><td>None</td><td>Beats PPO 100M in 3 of 3 games</td></tr>
+<tr><td>E6</td><td>Write</td><td class="n">1,480,274</td><td>0–50 passes</td><td>0 passes: over 50% wins. 50 passes: beats 20M-game PPO</td></tr>
+<tr><td>E7</td><td>Read</td><td class="n">Gemma 270M</td><td>Weights: none. Attention: ≤20 runs</td><td>Weights: 0 of 4. Attention: 3 of 3</td></tr>
+<tr><td>E8</td><td>Edit</td><td class="n">0.8 B</td><td>10, 25, 50 passes</td><td>MATH-500 7.9 → 48.1%; 0.016% of weights</td></tr>
+</tbody></table></div>
+
+<!-- ============ LIMITS ============ -->
+<h2 id="limits"><span class="tag">§9</span>Limits and open points</h2>
+<div class="prose">
+<ul>
+  <li><b>Scale and context.</b> The authors say the results are early. Context length and harness design limit them.</li>
+  <li><b>Weights only is not always enough.</b> In Experiment 7, weights alone failed. A probe was necessary.</li>
+  <li><b>Narrow tests.</b> Experiment 6 compares against small PPO networks. Experiment 8 studies one model.</li>
+  <li><b>No new ability.</b> Edits can unlock an ability that exists. They cannot add one (Gemma control).</li>
+  <li><b>Baselines are not equal.</b> In Experiment 5, PPO at 500M steps beat Astra in Seaquest and Asterix.</li>
+  <li><b>Future work.</b> The authors are building a benchmark and a better harness. They released the full experiment logs on GitHub and the edited Qwen model on Hugging Face.</li>
+</ul>
+<div class="note warn"><b>Source note.</b> This guide uses the text of the blog post at rikiyat.github.io/blog/weight-space-programming. Numbers come from that post. The sheets show the described process. Where the post does not give a step, the sheet shows a plain reading of the description (inference). Read the original post and the released logs for exact prompts and code.</div>
+</div>
+</div>
+
+<script>
+(function(){
+var NS='http://www.w3.org/2000/svg';
+var HW={T:34,P:26,V:30,I:24,S:38,R:34}, HH={T:30,P:26,V:26,I:24,S:20,R:30};
+var COLW=182, ROWH=196;
+function el(tag,attrs,parent,text){
+  var e=document.createElementNS(NS,tag);
+  for(var k in attrs){e.setAttribute(k,attrs[k]);}
+  if(text!==undefined)e.textContent=text;
+  if(parent)parent.appendChild(e);
+  return e;
+}
+function shape(g,k,tag){
+  if(k==='T'){
+    el('rect',{x:-34,y:-30,width:68,height:60,rx:12,'class':'tk'},g);
+    el('path',{d:'M-34,-8 H34','class':'th'},g);
+    el('path',{d:'M-20,8 q5,-5 10,0 t10,0 t10,0 t10,0','class':'th'},g);
+  } else if(k==='P'){
+    el('circle',{r:26,'class':'sh'},g);
+    el('path',{d:'M-10,-14 L16,0 L-10,14 Z','class':'shf'},g);
+  } else if(k==='V'){
+    el('path',{d:'M-30,-20 L0,0 L-30,20 Z M30,-20 L0,0 L30,20 Z','class':'sh'},g);
+    el('path',{d:'M0,0 V-16','class':'th'},g);
+    el('path',{d:'M-9,-16 Q0,-28 9,-16 Z','class':'sh'},g);
+  } else if(k==='I'){
+    el('circle',{r:24,'class':'sh'},g);
+    el('path',{d:'M-24,0 H24','class':'th'},g);
+    if(tag){var p=tag.split('-');el('text',{x:0,y:-5,'class':'tgi'},g,p[0]);el('text',{x:0,y:11,'class':'tgi'},g,p[1]||'');}
+  } else if(k==='S'){
+    el('polygon',{points:'-38,-20 28,-20 38,0 28,20 -38,20','class':'sh'},g);
+    if(tag)el('text',{x:-4,y:4,'class':'tgi'},g,tag);
+  } else if(k==='R'){
+    el('rect',{x:-34,y:-30,width:68,height:60,rx:6,'class':'sh'},g);
+    el('path',{d:'M-22,0 l8,-12 l8,24 l8,-24 l8,24 l8,-12 h6','class':'th'},g);
+  }
+}
+function render(spec,host){
+  var nodes=spec.nodes, map={}, minY=0,maxY=0,maxX=0;
+  nodes.forEach(function(n){map[n.id]=n;minY=Math.min(minY,n.y);maxY=Math.max(maxY,n.y);maxX=Math.max(maxX,n.x);});
+  var padL=84, padT=70;
+  function cx(n){return padL+n.x*COLW;}
+  function cy(n){return padT+(n.y-minY)*ROWH+30;}
+  var W=padL*2+maxX*COLW, H=padT+(maxY-minY)*ROWH+30+140;
+  var fig=document.createElement('figure');
+  fig.className='sheet '+(spec.kind==='PROGRAMMER'?'prog':'proc');
+  var st=document.createElement('div');st.className='st';
+  var s1=document.createElement('span');s1.textContent='DWG '+spec.no;
+  var b=document.createElement('b');b.textContent=spec.title;
+  var s2=document.createElement('span');s2.textContent=spec.kind+' SHEET · LEFT → RIGHT';
+  st.appendChild(s1);st.appendChild(b);st.appendChild(s2);fig.appendChild(st);
+  var sc=document.createElement('div');sc.className='sc';
+  var svg=el('svg',{width:W,height:H,viewBox:'0 0 '+W+' '+H,role:'img','aria-label':spec.title+' ('+spec.kind+')'});
+  var uid=spec.no.replace(/[^A-Za-z0-9]/g,'');
+  var defs=el('defs',{},svg);
+  [['pipe','var(--pipe)'],['sig','var(--signal)']].forEach(function(m){
+    var mk=el('marker',{id:uid+m[0],viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:8,markerHeight:8,orient:'auto-start-reverse'},defs);
+    el('path',{d:'M0,0 L10,5 L0,10 Z',style:'fill:'+m[1]},mk);
+  });
+  // edges first
+  spec.edges.forEach(function(ed){
+    var a=map[ed.a], bb=map[ed.b];
+    var ax=cx(a),ay=cy(a),bx=cx(bb),by=cy(bb);
+    var ha=HW[a.k],va=HH[a.k],hb=HW[bb.k],vb=HH[bb.k];
+    var pts;
+    if(ed.m==='t'){
+      var yT=Math.min(ay,by)-va-26;
+      pts=[[ax,ay-va],[ax,yT],[bx,yT],[bx,by-vb]];
+    } else if(ay===by){
+      pts= bx>ax ? [[ax+ha,ay],[bx-hb,by]] : [[ax-ha,ay],[bx+hb,by]];
+    } else if(ax===bx){
+      pts= by>ay ? [[ax,ay+va],[bx,by-vb]] : [[ax,ay-va],[bx,by+vb]];
+    } else if(ed.m==='v'){
+      var sy= by>ay ? ay+va : ay-va;
+      pts= bx>ax ? [[ax,sy],[ax,by],[bx-hb,by]] : [[ax,sy],[ax,by],[bx+hb,by]];
+    } else {
+      var sx= bx>ax ? ax+ha : ax-ha;
+      var ey= by>ay ? by-vb : by+vb;
+      pts=[[sx,ay],[bx,ay],[bx,ey]];
+    }
+    var d='M'+pts.map(function(p){return p[0]+','+p[1];}).join(' L');
+    el('path',{d:d,'class':ed.t==='s'?'sig':'pipe','marker-end':'url(#'+uid+(ed.t==='s'?'sig':'pipe')+')'},svg);
+    if(ed.l){
+      for(var i=0;i<pts.length-1;i++){
+        var p=pts[i],q=pts[i+1],len=Math.abs(q[0]-p[0])+Math.abs(q[1]-p[1]);
+        if(len>=56){
+          var mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;
+          if(p[1]===q[1]) el('text',{x:mx-ed.l.length*3,y:my-7,'class':'el'},svg,ed.l);
+          else el('text',{x:mx+7,y:my+4,'class':'el'},svg,ed.l);
+          break;
+        }
+      }
+    }
+  });
+  nodes.forEach(function(n){
+    var g=el('g',{transform:'translate('+cx(n)+','+cy(n)+')'},svg);
+    shape(g,n.k,n.tag);
+    var y=HH[n.k]+16;
+    if(n.k!=='I'&&n.k!=='S'){el('text',{x:0,y:y,'class':'tg'},g,n.tag);y+=14;}
+    else if(n.k==='S'){y+=0;}
+    n.lab.forEach(function(t,i){el('text',{x:0,y:y,'class':i===0?'lab':'lab2'},g,t);y+=14;});
+  });
+  sc.appendChild(svg);fig.appendChild(sc);
+  var sf=document.createElement('div');sf.className='sf';sf.textContent=spec.foot||'';
+  if(spec.foot)fig.appendChild(sf);
+  host.appendChild(fig);
+}
+function N(id,k,tag,lab,x,y){return {id:id,k:k,tag:tag,lab:lab.split('|'),x:x,y:y||0};}
+function E(a,b,t,l,m){return {a:a,b:b,t:t||'p',l:l||'',m:m||'h'};}
+
+var D={};
+D.m0p={no:'WSP-00-P',kind:'PROCESS',title:'Master pipeline',foot:'Solid = data flow. Dashed = probe and feedback. The valve picks the answer path or the write path.',
+ nodes:[
+  N('w','T','T-001','Network weights|written as text',0,0),
+  N('t','S','IN-01','Task in words|(read or write)',0,-1),
+  N('p','P','P-001','LLM agent (Astra)|reads and reasons',1,0),
+  N('v','V','V-001','Tools allowed?|none, sandbox,|forward passes',2,0),
+  N('i','I','XI-001','Probe result|score, attention,|sandbox output',2,1),
+  N('a','S','OUT-01','Answer in words|(read task)',3,-1),
+  N('r','R','R-001','Write or edit|weights|(write task)',3,0),
+  N('q','I','QI-001','Score|truth match, or|episodes and accuracy',4,0),
+  N('o','S','OUT-02','Result',5,0)],
+ edges:[E('w','p'),E('t','p'),E('p','v'),E('v','i','s','probe'),E('i','p','s','result'),E('v','a','p','','v'),E('v','r'),E('r','q'),E('a','q'),E('q','o')]};
+D.m0c={no:'WSP-00-C',kind:'PROGRAMMER',title:'Master pipeline as a program',foot:'Pump = function · Tank = variable · Valve = if/while · Reactor = mutation · Instrument = test.',
+ nodes:[
+  N('a','S','IN','net: Network|task: str',0,0),
+  N('b','P','f01','serialize(net)|-> text',1,0),
+  N('c','T','v01','prompt: str',2,0),
+  N('d','P','f02','agent(prompt)|-> action',3,0),
+  N('e','V','if01','action.kind ?',4,0),
+  N('f','I','XI-1','run_tool()|forward, attn,|sandbox',4,1),
+  N('g','S','ret','return answer: str',5,-1),
+  N('h','R','mut','net.w[i] += patch',5,0),
+  N('i','I','QI-1','score =|evaluate(net)',6,0),
+  N('j','S','OUT','score: float',7,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f','s','call'),E('f','d','s','tool result'),E('e','g','p','','v'),E('e','h'),E('h','i'),E('g','i'),E('i','j')]};
+
+D.e1p={no:'WSP-E1-P',kind:'PROCESS',title:'E1 · Name the game',foot:'Read task. No forward pass. 4 of 4 correct.',
+ nodes:[
+  N('a','S','IN-11','Four PPO nets|Breakout, Pong,|Pac-Man, Freeway',0,0),
+  N('b','T','T-111','Weights as text|17,253 per net',1,0),
+  N('c','S','IN-12','Prompt|grid, 5 actions,|no game names',1,-1),
+  N('d','P','P-111','LLM agent|reads weights',2,0),
+  N('i','I','XI-111','Layer check|input hot-spots,|output actions',2,1),
+  N('f','V','V-111','Match pattern|to game rules',3,0),
+  N('o','S','OUT-11','Game name|per network',4,0),
+  N('q','I','QI-111','Score|4 of 4 right',5,0)],
+ edges:[E('a','b'),E('b','d'),E('c','d'),E('d','f'),E('d','i','s'),E('i','f','s'),E('f','o'),E('o','q')]};
+D.e1c={no:'WSP-E1-C',kind:'PROGRAMMER',title:'E1 · Name the game as code',foot:'Loop: for net in nets. No tool calls inside llm().',
+ nodes:[
+  N('a','S','IN','nets: list[Net]|len = 4',0,0),
+  N('b','P','f01','to_text(net)|-> str',1,0),
+  N('s','T','v00','spec: str|grid + 5 actions',1,-1),
+  N('c','T','v01','prompt: str',2,0),
+  N('d','P','f02','llm(prompt)|-> reply',3,0),
+  N('e','P','f03','parse(reply)|-> game: str',4,0),
+  N('f','V','if01','game ==|truth[net] ?',5,0),
+  N('g','I','QI','hits += 1|acc = hits / 4',6,0),
+  N('o','S','OUT','return 4/4',7,0)],
+ edges:[E('a','b'),E('b','c'),E('s','c'),E('c','d'),E('d','e'),E('e','f'),E('f','b','s','next net','t'),E('f','g','p','yes'),E('g','o')]};
+
+D.e2p={no:'WSP-E2-P',kind:'PROCESS',title:'E2 · Name the shape',foot:'Read task. No forward pass allowed. Astra draws an outline, not a filled shape.',
+ nodes:[
+  N('a','S','IN-21','Three DDPM nets|circle, square,|triangle',0,0),
+  N('b','T','T-211','Weights as text|23,824 per net',1,0),
+  N('c','S','IN-22','Prompt|144 pixels +|16 step numbers;|no forward pass',1,-1),
+  N('d','P','P-211','LLM agent|reads weights',2,0),
+  N('i','I','XI-211','Output layer:|each hidden unit|draws an edge piece',2,1),
+  N('f','P','P-212','Assemble edge|pieces into|one shape',3,0),
+  N('g','V','V-211','Which shape?|circle, square,|triangle',4,0),
+  N('o','S','OUT-21','Name + sketch|(outline)',5,0),
+  N('q','I','QI-211','Compare with|training shape',6,0)],
+ edges:[E('a','b'),E('b','d'),E('c','d'),E('d','f'),E('d','i','s'),E('i','f','s'),E('f','g'),E('g','o'),E('o','q')]};
+D.e2c={no:'WSP-E2-C',kind:'PROGRAMMER',title:'E2 · Name the shape as code',foot:'The outline output proves a geometric read of W_out.',
+ nodes:[
+  N('a','S','IN','nets: dict[str,Net]|3 DDPMs',0,0),
+  N('b','P','f01','to_text(net)',1,0),
+  N('s','T','v00','spec: str|144 px, 16 step|"no forward pass"',1,-1),
+  N('c','T','v01','prompt: str',2,0),
+  N('d','P','f02','llm(prompt)|-> reply',3,0),
+  N('e','P','f03','extract_shape(reply)|-> name, points',4,0),
+  N('f','P','f04','draw(points)|-> outline.png',4,1),
+  N('g','V','if01','name ==|truth[net] ?',5,0),
+  N('o','S','OUT','name, image',6,0)],
+ edges:[E('a','b'),E('b','c'),E('s','c'),E('c','d'),E('d','e'),E('e','f','s'),E('e','g'),E('f','o','p','','h'),E('g','o'),E('g','b','s','next net','t')]};
+
+D.e3p={no:'WSP-E3-P',kind:'PROCESS',title:'E3 · Language and copying heads',foot:'Read task. Sandbox allowed. Running the network is forbidden and was checked.',
+ nodes:[
+  N('a','S','IN-31','Three char-level|transformers|Python, romaji,|English',0,0),
+  N('b','R','R-311','Remove embed|and output layers',1,0),
+  N('c','T','T-311','Weights of 4 blocks|7.16 M, 384 dims,|no labels',2,0),
+  N('d','S','IN-32','Rules|Python sandbox,|100 runs max,|no model runs',2,-1),
+  N('e','P','P-311','LLM agent|analyses matrices',3,0),
+  N('i1','I','XI-311','Copy-head test|weight analysis',3,1),
+  N('i2','I','XI-312','Last block:|count written|directions',4,1),
+  N('f','V','V-311','Decide|language',4,0),
+  N('o','S','OUT-31','Language +|copying heads',5,0),
+  N('g','T','T-312','Truth test:|random string x2,|copy score',5,1),
+  N('q','I','QI-311','Compare heads|with truth',6,0)],
+ edges:[E('a','b'),E('b','c'),E('c','e'),E('d','e'),E('e','f'),E('e','i1','s'),E('i1','i2','s'),E('i2','f','s'),E('f','o'),E('o','q'),E('g','q','s')]};
+D.e3c={no:'WSP-E3-C',kind:'PROGRAMMER',title:'E3 · Language and copying heads as code',foot:'Truth check: copy_score >= 0.22 for copying heads; <= 0.02 for all others.',
+ nodes:[
+  N('a','S','IN','models: list[Net]|3 transformers',0,0),
+  N('b','P','f01','strip(net)|drop embed, unembed',1,0),
+  N('c','T','v01','blocks: Tensor[4]|d = 384',2,0),
+  N('s','T','v00','sandbox: Python|runs <= 100|run_model = banned',2,-1),
+  N('d','P','f02','llm(prompt,|sandbox)',3,0),
+  N('e','P','f03','copy_score(OV, QK)|weights only',3,1),
+  N('f','P','f04','parse(reply)|-> lang, heads',4,0),
+  N('o','S','OUT','language: str|heads: list',5,0),
+  N('g','T','v02','truth: dict|repeat rand x2',5,1),
+  N('h','I','QI','assert set(heads)|== set(truth)',6,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('s','d'),E('d','f'),E('d','e','s','call'),E('e','f','s'),E('f','o'),E('o','h'),E('g','h','s')]};
+
+D.e4p={no:'WSP-E4-P',kind:'PROCESS',title:'E4 · Fix a failing policy',foot:'Write task. One reply, no tools. 3.5% of weights change. 0 → 1,024 of 1,024.',
+ nodes:[
+  N('a','S','IN-41','Failed PPO policy|Kinetix car-on-ramp|0 of 256 success',0,0),
+  N('b','T','T-411','Weights as text|171,664 values',1,0),
+  N('c','S','IN-42','Scene text +|one episode log',1,-1),
+  N('d','P','P-411','LLM agent|one reply, no tools',2,0),
+  N('i','I','XI-411','Diagnose:|local minimum,|car hits ramp',2,1),
+  N('e','R','R-411','Add side path|few units per layer|3.5% of weights',3,0),
+  N('f','V','V-411','Gate in network:|wheel past|red strip?',4,0),
+  N('g1','P','P-412','Side path on:|back the car up',5,-1),
+  N('g2','P','P-413','Side path off:|trained net jumps|and finishes',5,0),
+  N('q','I','QI-411','1,024 episodes|1,024 succeed',6,0)],
+ edges:[E('a','b'),E('b','d'),E('c','d'),E('d','i','s'),E('i','e','s'),E('d','e'),E('e','f'),E('f','g1','p','no','v'),E('f','g2','p','yes'),E('g1','q'),E('g2','q')]};
+D.e4c={no:'WSP-E4-C',kind:'PROGRAMMER',title:'E4 · Fix a failing policy as code',foot:'The gate is part of the edited network. It runs at every step of every episode.',
+ nodes:[
+  N('a','S','IN','policy: Net (171,664)|scene: str|episode: Log',0,0),
+  N('b','P','f01','serialize(policy)',1,0),
+  N('c','T','v01','prompt: str',2,0),
+  N('d','P','f02','llm(prompt)|one reply',3,0),
+  N('e','P','f03','parse_patch(reply)|-> idx, delta',4,0),
+  N('f','R','mut','policy.w[idx]|+= delta|(3.5% of weights)',5,0),
+  N('g','V','if01','side.on ?|wheel x < strip x',6,0),
+  N('h1','P','f04','act = reverse()',7,-1),
+  N('h2','P','f05','act = trained(obs)',7,0),
+  N('q','I','QI','success =|run(policy, 1024)',8,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','h1','p','true','v'),E('g','h2','p','false'),E('h1','q'),E('h2','q')]};
+
+D.e5p={no:'WSP-E5-P',kind:'PROCESS',title:'E5 · Write a game player',foot:'Write task. One reply. No tools, no rollout. Breakout 517.4 vs PPO 15.8 (100M steps).',
+ nodes:[
+  N('z','T','T-511','Zero weights|600 → 32 → 32 → 6',0,0),
+  N('a','S','IN-51','Game rules,|source code,|I/O layout,|scoring',0,-1),
+  N('c','P','P-511','LLM agent|one reply,|no tools, no rollout',1,0),
+  N('d','R','R-511','Write weights|layer 1: features|layer 2: actions',2,0),
+  N('e','T','T-512','Finished network',3,0),
+  N('f','I','QI-511','Play 1,000 episodes|sticky 0.1,|10,000-step cap',4,0),
+  N('g','V','V-511','Compare with PPO|100M and 500M',5,0),
+  N('o','S','OUT-51','Mean scores',6,0)],
+ edges:[E('a','c'),E('z','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','o')]};
+D.e5c={no:'WSP-E5-C',kind:'PROGRAMMER',title:'E5 · Write a game player as code',foot:'No gradient, no loss, no data. One llm() call, one parse, one assignment.',
+ nodes:[
+  N('a','S','IN','rules, src, layout,|scoring: str',0,0),
+  N('b','P','f01','llm(prompt)|one call',1,0),
+  N('c','P','f02','parse_weights(reply)|-> W1, W2, W3',2,0),
+  N('z','T','v01','net = zeros(|600, 32, 32, 6)',3,-1),
+  N('d','R','mut','net.W = parsed',3,0),
+  N('e','P','f03','rollout(net)|1,000 episodes',4,0),
+  N('f','V','if01','mean >|ppo_baseline ?',5,0),
+  N('o','S','OUT','scores: dict',6,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('z','d'),E('d','e'),E('e','f'),E('f','o')]};
+
+D.e6p={no:'WSP-E6-P',kind:'PROCESS',title:'E6 · Write a Go player',foot:'Write task. Budget: 0 to 50 forward passes. Keep an edit only if the network wins more.',
+ nodes:[
+  N('z','T','T-611','Zero weights|243 → 512 x6 → 82|1,480,274 values',1,-1),
+  N('a','S','IN-61','Go rules +|input / output|layout + budget',0,0),
+  N('c','P','P-611','LLM agent|Python sandbox',1,0),
+  N('d','R','R-611','Write layers|336-line script:|stones, liberties,|chains, move score',2,0),
+  N('e','V','V-611','Passes left?',3,0),
+  N('f','I','XI-611','Forward pass|up to 128 games or|256 positions',3,1),
+  N('k','V','V-612','Keep edit only|if wins rise',2,1),
+  N('t','S','OUT-61','Final network',4,0),
+  N('q','I','QI-612','2,000 games vs|each small PPO net',5,0),
+  N('o','S','OUT-62','Win rate',6,0)],
+ edges:[E('a','c'),E('z','c'),E('c','d'),E('d','e'),E('e','f','s','yes'),E('f','k','s','losses'),E('k','c','s','edit'),E('e','t','p','no'),E('t','q'),E('q','o')]};
+D.e6c={no:'WSP-E6-C',kind:'PROGRAMMER',title:'E6 · Write a Go player as code',foot:'The loop is a manual hill climb in text. No gradient. No search. No fitting.',
+ nodes:[
+  N('a','S','IN','spec: str|budget: int|(0..50)',0,0),
+  N('b','P','f01','llm_write(spec)|-> script|(336 lines)',1,0),
+  N('z','T','v01','net = zeros(|243, 512*6, 82)',2,-1),
+  N('c','R','mut','exec(script)|net.w = ...',2,0),
+  N('d','P','f02','forward_pass(net)|<=128 games',3,0),
+  N('e','V','if01','while budget > 0',4,0),
+  N('g','P','f03','llm_edit(losses)|-> patch;|keep if wins rise',4,1),
+  N('t','I','QI','play(net, ppo,|2000 games)',5,0),
+  N('o','S','OUT','win_rate: float',6,0)],
+ edges:[E('a','b'),E('b','c'),E('z','c'),E('c','d'),E('d','e'),E('e','g','p','true','v'),E('g','c','s','patch'),E('e','t','p','false'),E('t','o')]};
+
+D.e7p={no:'WSP-E7-P',kind:'PROCESS',title:'E7 · Find the sycophant',foot:'Read task. Mode A (weights only) failed 4 of 4. Mode B (attention probe) found 3 of 3.',
+ nodes:[
+  N('a','S','IN-71','Gemma 3 270M pair|honest + sycophant|3 pairs',0,0),
+  N('b','T','T-711','Weights as text|embed + output|layers frozen',1,0),
+  N('c','V','V-711','Which mode?',2,0),
+  N('a1','P','P-711','Mode A:|compare weights|of both models',3,-1),
+  N('a2','I','QI-711','Link to behavior|fails',4,-1),
+  N('a3','S','OUT-71','Cannot tell|(0 of 4)',5,-1),
+  N('b1','P','P-721','Mode B:|LLM writes|up to 16 texts',3,1),
+  N('b2','I','XI-721','Attention tool|returns attention only|up to 20 runs',4,1),
+  N('b3','P','P-722','Find middle-layer|heads (head 10.2)',5,1),
+  N('b4','V','V-721','More attention on|user answer?',6,1),
+  N('b5','S','OUT-72','Sycophant found|3 of 3 pairs',7,1)],
+ edges:[E('a','b'),E('b','c'),E('c','a1','p','','v'),E('c','b1','p','','v'),E('a1','a2'),E('a2','a3'),E('b1','b2'),E('b2','b3'),E('b3','b4'),E('b4','b5')]};
+D.e7c={no:'WSP-E7-C',kind:'PROGRAMMER',title:'E7 · Find the sycophant as code',foot:'Mode B asserts on one number: attention mass on the user answer.',
+ nodes:[
+  N('a','S','IN','pairs: 3 x (A, B)',0,0),
+  N('b','V','if01','mode ?',1,0),
+  N('a1','P','f01','weight_diff(A, B)|-> delta',2,-1),
+  N('a2','P','f02','llm(delta)|-> guess',3,-1),
+  N('a3','I','QI','guess == truth ?|False (4 of 4)',4,-1),
+  N('b1','P','f03','llm_texts()|-> texts[<=16]',2,1),
+  N('b2','P','f04','attn_tool(m, text)|-> attn only|calls <= 20',3,1),
+  N('b3','P','f05','head_stats(attn)|-> head 10.2',4,1),
+  N('b4','V','if02','attn[user_ans]|is higher ?',5,1),
+  N('b5','S','OUT','sycophant = B|3 of 3 pairs',6,1)],
+ edges:[E('a','b'),E('b','a1','p','A','v'),E('b','b1','p','B','v'),E('a1','a2'),E('a2','a3'),E('b1','b2'),E('b2','b3'),E('b3','b4'),E('b4','b5','p','yes')]};
+
+D.e8p={no:'WSP-E8-P',kind:'PROCESS',title:'E8 · Fix a looping model',foot:'Write task. 131,072 weights (0.016%) change. MATH-500 7.9% → 48.1% at 50 passes.',
+ nodes:[
+  N('a','S','IN-81','Qwen3.5-0.8B|weights in Python,|no GPU',0,0),
+  N('z','T','T-811','Practice sets|7,469 GSM8K +|7,275 MATH',1,-1),
+  N('c','P','P-811','LLM agent|plans probes',1,0),
+  N('d','V','V-811','Passes left?|10, 25, or 50',2,0),
+  N('f','I','XI-811','Forward pass on|practice problems|85 of 96 hit limit',2,1),
+  N('e','P','P-812','Trace loops to one|direction: MLP out,|layers 15 and 19',3,0),
+  N('g','R','R-811','Subtract direction|64 columns x 2 layers|131,072 weights',4,0),
+  N('h','T','T-812','Edited model',5,0),
+  N('q','I','QI-811','MATH-500, GSM8K,|IFEval, loop rate',6,0),
+  N('o','S','OUT-81','50 passes:|7.9 → 48.1%',7,0)],
+ edges:[E('a','c'),E('z','c'),E('c','d'),E('d','f','s','yes'),E('f','c','s','outputs'),E('d','e','p','no'),E('e','g'),E('g','h'),E('h','q'),E('q','o')]};
+D.e8c={no:'WSP-E8-C',kind:'PROGRAMMER',title:'E8 · Fix a looping model as code',foot:'Gemma control: no single direction to remove, so no gain (6.8% → 7.0–7.7%).',
+ nodes:[
+  N('a','S','IN','model: Qwen3.5-0.8B|budget: 10|25|50',0,0),
+  N('z','T','v01','data: practice sets|7,469 + 7,275',1,-1),
+  N('c','P','f01','agent(model, data)|-> next probe',1,0),
+  N('d','V','if01','used < budget ?',2,0),
+  N('f','P','f02','forward(model, batch)|-> outputs',2,1),
+  N('e','P','f03','find_direction(acts)|layers 15, 19',3,0),
+  N('g','R','mut','W_out[:, cols] -=|dir part|(64 cols x 2 layers)',4,0),
+  N('q','I','QI','evaluate(model)|MATH-500, GSM8K,|IFEval, loop rate',5,0),
+  N('o','S','OUT','metrics: dict',6,0)],
+ edges:[E('a','c'),E('z','c'),E('c','d'),E('d','f','s','true'),E('f','c','s','outputs'),E('d','e','p','false'),E('e','g'),E('g','q'),E('q','o')]};
+
+document.querySelectorAll('.dwg').forEach(function(h){var s=D[h.getAttribute('data-id')];if(s)render(s,h);});
+
+// legend symbols
+document.querySelectorAll('svg[data-sym]').forEach(function(s){
+  var k=s.getAttribute('data-sym');
+  if(k==='pipe'||k==='sig'){
+    var uid='lg'+k;var defs=el('defs',{},s);
+    var mk=el('marker',{id:uid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:8,markerHeight:8,orient:'auto'},defs);
+    el('path',{d:'M0,0 L10,5 L0,10 Z',style:'fill:'+(k==='pipe'?'var(--pipe)':'var(--signal)')},mk);
+    el('path',{d:'M4,10 H92','class':k,'marker-end':'url(#'+uid+')'},s);
+  } else {
+    var g=el('g',{transform:'translate(48,35)'},s);
+    shape(g,k,k==='I'?'QI-1':(k==='S'?'IN-1':''));
+  }
+});
+})();
+</script>

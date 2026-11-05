@@ -1,0 +1,1321 @@
+<title>lm_understand-logs Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet report. Prose column on top, wide P&ID sheets that scroll sideways inside their own frame. */
+:root{
+  --bg:#e9ede8; --paper:#f6f8f4; --ink:#16282e; --muted:#58696c; --rule:#c3cdc6;
+  --pipe:#0e5a6b; --signal:#c2410c; --tank:#e3ecea; --hl:#fff3d6;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+    --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+  --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);margin:0;
+  padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+.prose{max-width:72ch}
+header.tb{border:2px solid var(--ink);background:var(--paper);display:grid;grid-template-columns:1fr auto;gap:0}
+header.tb .main{padding:20px 22px;min-width:0}
+header.tb .meta{border-left:2px solid var(--ink);padding:12px 16px;font:500 12px/1.7 var(--f-mono);color:var(--muted);min-width:0}
+header.tb .meta b{color:var(--ink);font-weight:500}
+h1{font:700 clamp(34px,6vw,60px)/0.95 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin:6px 0 10px;text-wrap:balance}
+.kicker{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}
+.lede{font-size:18px;max-width:62ch;margin:0}
+nav.toc{margin:20px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font:500 12px var(--f-mono);color:var(--ink);text-decoration:none;border:1px solid var(--rule);background:var(--paper);padding:5px 9px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--pipe);outline:2px solid var(--pipe);outline-offset:1px}
+h2{font:700 clamp(26px,4vw,38px)/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:56px 0 14px;padding-top:14px;border-top:3px solid var(--ink);text-wrap:balance;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h2 .tag{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.08em}
+h3{font:600 25px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--ink);text-wrap:balance}
+h3 .mode{font:500 11px var(--f-mono);letter-spacing:.1em;border:1px solid currentColor;padding:1px 6px;margin-left:8px;vertical-align:3px;color:var(--pipe)}
+h3 .mode.w{color:var(--signal)}
+h4{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:5px}
+code,.m{font-family:var(--f-mono);font-size:.9em;background:var(--tank);padding:1px 5px}
+.note{border-left:4px solid var(--signal);background:var(--paper);padding:10px 14px;margin:16px 0;max-width:72ch}
+.note.warn{background:var(--hl)}
+.eq{font:500 15px var(--f-mono);background:var(--paper);border:1px solid var(--rule);padding:10px 14px;margin:12px 0;overflow-x:auto;max-width:72ch}
+dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:0;border:1px solid var(--rule);background:var(--paper);margin:10px 0 6px;max-width:900px}
+dl.facts dt,dl.facts dd{margin:0;padding:7px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.facts dt{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--rule)}
+dl.facts dt:last-of-type,dl.facts dd:last-of-type{border-bottom:0}
+dl.gloss{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:0;border:1px solid var(--rule);background:var(--paper)}
+dl.gloss dt,dl.gloss dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.gloss dt{font:500 13px var(--f-mono);border-right:1px solid var(--rule)}
+.tw{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--rule);background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+/* drawing sheets */
+figure.sheet{margin:16px 0 24px;border:2px solid var(--ink);background:var(--paper)}
+figure.sheet .st{display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding:7px 14px;font:500 12px var(--f-mono);color:var(--muted)}
+figure.sheet .st b{font:600 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+figure.sheet .sc{overflow-x:auto;padding:6px 0 0}
+figure.sheet svg{display:block}
+figure.sheet .sf{border-top:1px solid var(--rule);padding:6px 14px;font:400 12px var(--f-mono);color:var(--muted)}
+figure.sheet.prog .st{background:var(--tank)}
+svg .sh{fill:var(--paper);stroke:var(--ink);stroke-width:2}
+svg .shf{fill:var(--ink);stroke:none}
+svg .tk{fill:var(--tank);stroke:var(--ink);stroke-width:2}
+svg .th{fill:none;stroke:var(--ink);stroke-width:1.5}
+svg .pipe{fill:none;stroke:var(--pipe);stroke-width:2.4}
+svg .sig{fill:none;stroke:var(--signal);stroke-width:1.6;stroke-dasharray:6 4}
+svg .lab{fill:var(--ink);font:600 12px var(--f-body);text-anchor:middle}
+svg .lab2{fill:var(--ink);font:400 11.5px var(--f-body);text-anchor:middle}
+svg .tg{fill:var(--muted);font:500 10.5px var(--f-mono);text-anchor:middle;letter-spacing:.04em}
+svg .tgi{fill:var(--ink);font:500 10px var(--f-mono);text-anchor:middle}
+svg .el{fill:var(--muted);font:500 10.5px var(--f-mono)}
+figure.prog svg .lab,figure.prog svg .lab2{font-family:var(--f-mono)}
+figure.prog svg .lab{font-size:11px;font-weight:500}
+figure.prog svg .lab2{font-size:11px}
+svg .lab,svg .lab2,svg .tg,svg .el{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.legend td svg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){header.tb{grid-template-columns:1fr}header.tb .meta{border-left:0;border-top:2px solid var(--ink)}.two{grid-template-columns:1fr}dl.facts{grid-template-columns:1fr}dl.facts dt{border-right:0;border-bottom:0;padding-bottom:0}}
+@media (max-width:520px){dl.gloss{grid-template-columns:1fr}dl.gloss dt{border-right:0;border-bottom:0;padding-bottom:0}}
+.tree{font:400 12.5px/1.55 var(--f-mono);background:var(--paper);border:1px solid var(--rule);padding:12px 16px;margin:12px 0 14px;overflow-x:auto;white-space:pre;max-width:100%}
+h3.plain{border-top:0;margin-top:20px;font-size:20px}
+</style>
+
+<div class="wrap">
+<header class="tb">
+  <div class="main">
+    <div class="kicker">Repository map · Simplified Technical English · P&amp;ID sheets</div>
+    <h1>lm_understand-logs</h1>
+    <p class="lede">The public logs behind "Sparks of Weight Space Programming". This guide explains every folder, every file type, and every pipeline in the repository. Each pipeline has a process P&amp;ID and a programmer P&amp;ID.</p>
+  </div>
+  <div class="meta">
+    REPO <b>RikiyaT/lm_understand-logs</b><br>
+    COMMIT <b>4d09ba6 · 29 Oct 2026</b><br>
+    FILES <b>8,097</b><br>
+    TURNS <b>1,125 (all tool-free)</b><br>
+    MODEL <b>gpt-6-astra</b><br>
+    SHEETS <b>2 × 15</b>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#what">1 Purpose</a><a href="#terms">2 Terms</a><a href="#layout">3 Layout</a><a href="#harness">4 Harness</a><a href="#loop">5 Run loop</a><a href="#files">6 File types</a><a href="#trace">7 Trace a number</a>
+  <a href="#e1">E1</a><a href="#e2">E2</a><a href="#e3">E3</a><a href="#e4">E4</a><a href="#e5">E5</a><a href="#e6">E6</a><a href="#e7">E7</a><a href="#e8">E8</a><a href="#gaps">Gaps</a>
+</nav>
+
+<div class="note warn prose">
+  <b>How to read this guide.</b> The text follows the rules of ASD-STE100 as closely as possible. A human did not run the official STE checker on it. Facts come from the repository files that I read: the root README, the README of each experiment, the harness folder, the code folders, and sample run files. I did not open all 8,097 files. The harness code that drives the Codex calls is not in the repository. Where a sheet shows a step that no file states, the step is marked "(inference)".
+</div>
+
+<!-- ============ 1 PURPOSE ============ -->
+<h2 id="what"><span class="tag">§1</span>What the repository is</h2>
+<div class="prose">
+<p>This repository holds the complete logs of the eight experiments in the blog post "Sparks of Weight Space Programming: LLMs can understand and write neural network weights". The first guide explained the theory of the post. This guide explains the evidence behind it.</p>
+<p>For each experiment, the repository gives five kinds of evidence:</p>
+<ul>
+  <li>everything the authors sent to the model;</li>
+  <li>everything the model sent back, with its reasoning summaries where they exist;</li>
+  <li>every piece of code the model ran, with the output that it saw;</li>
+  <li>the evaluation behind each number in the post;</li>
+  <li>the networks that the model read or wrote.</li>
+</ul>
+<p>The repository does not hold a program to run the whole study. It holds <b>records</b>. It also holds the scripts that build, train, apply, and score the networks.</p>
+
+<h3>Key facts from the repository</h3>
+<ul>
+  <li><b>"Astra" is a real model name.</b> The root README says that Astra is OpenAI's <span class="m">gpt-6-astra</span>.</li>
+  <li><b>One turn is one Codex call.</b> The authors call the Codex CLI with <span class="m">codex exec</span>. They continue a conversation with <span class="m">codex exec resume &lt;thread&gt;</span>.</li>
+  <li><b>No built-in tools.</b> The authors switched off every Codex tool. They audited every turn. All 1,125 turns are tool-free.</li>
+  <li><b>Code goes through the authors' sandbox.</b> In Experiments 3, 6, 7, and 8, the model writes a Python block. The harness runs it and sends the output back.</li>
+  <li><b>Only the reported runs are here.</b> Trial runs of earlier prompt versions are not in the repository.</li>
+</ul>
+</div>
+
+<!-- ============ 2 TERMS ============ -->
+<h2 id="terms"><span class="tag">§2</span>Terms</h2>
+<p class="prose">Each term has one meaning in this guide.</p>
+<dl class="gloss">
+  <dt>Codex CLI</dt><dd>A command-line program. The authors use it as the way to call the model.</dd>
+  <dt>turn</dt><dd>One call of <span class="m">codex exec</span>. One message goes in. One reply comes out.</dd>
+  <dt>conversation</dt><dd>A series of turns that share one thread. Each thread has an id such as <span class="m">id-d085bb68</span>.</dd>
+  <dt>reasoning effort</dt><dd>A setting per call: <span class="m">high</span>, <span class="m">xhigh</span>, or <span class="m">max</span>. A higher setting lets the model think longer.</dd>
+  <dt>reasoning summary</dt><dd>A short text that the model gives about its thinking. Some runs have it. Some runs do not.</dd>
+  <dt>event stream</dt><dd>The raw record of one turn, in <span class="m">events.jsonl</span>.</dd>
+  <dt>audit</dt><dd>A check of the event stream. A turn is tool-free when the stream holds only messages, reasoning summaries, and one Codex notice.</dd>
+  <dt>sandbox</dt><dd>A closed Python area. It has no network. The authors use bubblewrap (<span class="m">bwrap</span>) to make it.</dd>
+  <dt>pass</dt><dd>One use of a probe that runs the network: a game pass, a position pass, or a forward-pass call.</dd>
+  <dt>nudge</dt><dd>A message from the harness that asks the model to test one more idea before it finishes.</dd>
+  <dt>handoff</dt><dd>A new conversation that continues old work. The harness gives it the task, the notes, and the current edit.</dd>
+  <dt>edits block</dt><dd>A code block that sets weights, one statement per line. Example: <span class="m">actor0.W[6, 122] = 80</span>.</dd>
+  <dt>head-to-head</dt><dd>Games where two networks play each other.</dd>
+  <dt>placeholder</dt><dd>A short tag such as <span class="m">&lt;data&gt;</span> that replaces a private path.</dd>
+  <dt>.npz / .npy</dt><dd>NumPy files. They hold arrays of numbers.</dd>
+  <dt>manifest</dt><dd>A list. It names the files or tensors in a set, with sizes and hashes.</dd>
+  <dt>diff</dt><dd>The difference between two models. The repository stores edits as a diff from the public base model.</dd>
+  <dt>SHA-256</dt><dd>A hash. It proves that a file has not changed.</dd>
+  <dt>truth / answer key</dt><dd>The correct answer. The model never saw it. Only the scorer reads it.</dd>
+</dl>
+
+<!-- ============ 3 LAYOUT ============ -->
+<h2 id="layout"><span class="tag">§3</span>The layout</h2>
+<div class="prose">
+<p>The root has two files and ten folders: one <span class="m">harness/</span> folder and eight experiment folders. The names start with the experiment number.</p>
+</div>
+<pre class="tree" aria-label="Repository tree">lm_understand-logs/
+├─ README.md                 index, how the model was run, file guide, licenses
+├─ LICENSE                   CC BY 4.0 (data), MIT (scripts), GPL-3.0 note (MinAtar)
+├─ harness/                  the rules around every call
+│  ├─ codex_config.toml      all built-in tools off
+│  ├─ instructions.md        one line: "Answer the user's request."
+│  └─ sandbox.py             the Python sandbox of Experiment 6 (bubblewrap)
+├─ exp1_which_game/          E1  name the game          (43 files)
+├─ exp2_diffusion/           E2  name the shape         (36 files)
+├─ exp3_language/            E3  language + copy heads  (319 files)
+├─ exp4_fix_car/             E4  fix a failing policy   (15 files)
+├─ exp5_write_from_scratch/  E5  MinAtar from zero      (36 files)
+├─ exp6_go_from_scratch/     E6  Go, 1.5 M weights      (1,472 files)
+├─ exp7_sycophancy/          E7  find the sycophant     (1,899 files)
+└─ exp8_math/                E8  fix a looping model    (4,272 files)</pre>
+
+<div class="tw"><table>
+<thead><tr><th>Folder</th><th>Post</th><th>Runs</th><th>Tools</th><th>Effort</th><th class="n">Turns</th><th class="n">Files</th><th class="n">Size</th></tr></thead>
+<tbody>
+<tr><td><span class="m">exp1_which_game</span></td><td>E1 which game</td><td>4 games</td><td>none</td><td>high</td><td class="n">4</td><td class="n">43</td><td class="n">1.6 MB</td></tr>
+<tr><td><span class="m">exp2_diffusion</span></td><td>E2 what shape</td><td>3 shapes</td><td>none, no forward pass</td><td>high</td><td class="n">3</td><td class="n">36</td><td class="n">1.4 MB</td></tr>
+<tr><td><span class="m">exp3_language</span></td><td>E3 language</td><td>3 networks × 2 conversations</td><td>Python sandbox</td><td>xhigh</td><td class="n">54</td><td class="n">319</td><td class="n">90 MB</td></tr>
+<tr><td><span class="m">exp4_fix_car</span></td><td>E4 fix a network</td><td>1 one-shot edit</td><td>none</td><td>high</td><td class="n">1</td><td class="n">15</td><td class="n">2.5 MB</td></tr>
+<tr><td><span class="m">exp5_write_from_scratch</span></td><td>E5 write networks</td><td>3 games</td><td>none</td><td>xhigh</td><td class="n">3</td><td class="n">36</td><td class="n">0.6 MB</td></tr>
+<tr><td><span class="m">exp6_go_from_scratch</span></td><td>E6 Go network</td><td>0, 10, 25, 50 passes</td><td>Python sandbox + passes</td><td>xhigh</td><td class="n">176</td><td class="n">1,472</td><td class="n">47 MB</td></tr>
+<tr><td><span class="m">exp7_sycophancy</span></td><td>E7 sycophant</td><td>4 weights-only rounds + attention tool, 3 pairs each</td><td>Python sandbox, attention tool</td><td>xhigh</td><td class="n">322</td><td class="n">1,899</td><td class="n">25 MB</td></tr>
+<tr><td><span class="m">exp8_math</span></td><td>E8 math + Gemma</td><td>3 Qwen runs, 4 Gemma runs</td><td>Python kernel + forward-pass tool</td><td>max</td><td class="n">562</td><td class="n">4,272</td><td class="n">64 MB</td></tr>
+</tbody></table></div>
+<p class="prose">The turn counts add up to 1,125. This is the number of <span class="m">run.json</span> files in the repository, and the number of tool-free turns that the root README states.</p>
+
+<div class="prose"><h3>The layers of every experiment folder</h3>
+<p>Most experiment folders use the same four layers. Each layer has one job.</p></div>
+<div class="tw"><table>
+<thead><tr><th>Layer</th><th>Job</th><th>Who reads it</th></tr></thead>
+<tbody>
+<tr><td><span class="m">README.md</span></td><td>Says which run is which tab in the post, and which file holds each number.</td><td>The reader</td></tr>
+<tr><td><span class="m">runs/</span></td><td>The raw record of every conversation: prompts, replies, events, code, outputs.</td><td>The reader who wants proof</td></tr>
+<tr><td><span class="m">networks/</span></td><td>The networks that the model read or wrote, and sometimes their training record.</td><td>Anyone who wants to run them</td></tr>
+<tr><td><span class="m">eval/</span></td><td>The scoring, the answer keys, and the ground truth. The model never saw these.</td><td>The scorer, and the reader</td></tr>
+</tbody></table></div>
+<div class="prose"><p>Experiments 3, 7, and 8 add folders for data, code, or training. The experiment sections below show each tree.</p></div>
+
+<div class="dwg" data-id="r0p"></div>
+<div class="dwg" data-id="r0c"></div>
+
+<!-- ============ 4 HARNESS ============ -->
+<h2 id="harness"><span class="tag">§4</span>The harness folder</h2>
+<div class="prose">
+<p>The <span class="m">harness/</span> folder holds the three files that set the rules for every call.</p>
+
+<h3>4.1 <span class="m">codex_config.toml</span></h3>
+<p>The file gives the default "no tools" setup. The comment in the file says: "every built-in capability that gives the model a tool is switched off; experiments that need tools add their own MCP server explicitly."</p>
+<ul>
+  <li><b>Model and effort.</b> The file sets <span class="m">gpt-6-luna</span> and <span class="m">medium</span> as defaults. Each call overrides both. The experiments use <span class="m">gpt-6-astra</span> and the efforts in the table below.</li>
+  <li><b>Safe mode.</b> <span class="m">approval_policy = "never"</span>, <span class="m">sandbox_mode = "read-only"</span>, and <span class="m">web_search = "disabled"</span>.</li>
+  <li><b>Agents off.</b> <span class="m">[agents] enabled = false</span>.</li>
+  <li><b>Features off.</b> The <span class="m">[features]</span> list sets 22 flags to <span class="m">false</span>. They include <span class="m">shell_tool</span>, <span class="m">unified_exec</span>, <span class="m">view_image</span>, <span class="m">image_generation</span>, <span class="m">multi_agent</span>, <span class="m">plugins</span>, <span class="m">browser_use</span>, <span class="m">computer_use</span>, and <span class="m">code_mode</span>.</li>
+  <li><b>Instructions.</b> The file points to <span class="m">instructions_neutral.md</span> in the Codex home folder.</li>
+</ul>
+
+<h3>4.2 <span class="m">instructions.md</span></h3>
+<p>The file has one line: "Answer the user's request." Every run folder keeps a copy named <span class="m">instructions.md</span>.</p>
+
+<h3>4.3 <span class="m">sandbox.py</span></h3>
+<p>The file is the Python sandbox for the Go experiment. The file docstring says that it works like the sandbox of the math experiment.</p>
+<ul>
+  <li><b>Isolation.</b> The command uses <span class="m">bwrap --unshare-all --die-with-parent --new-session --clearenv</span>. The system folders are read-only. <span class="m">/tmp</span> is a fresh memory folder.</li>
+  <li><b>Work folder.</b> <span class="m">/work</span> is read-write. It stays between runs. It holds the network (<span class="m">net/&lt;name&gt;.npy</span>), the pass results, and the model's files.</li>
+  <li><b>Libraries.</b> numpy, scipy, scikit-learn, PyTorch (CPU), pandas, sympy, networkx. No Go library. No network. No GPU.</li>
+  <li><b>Limits.</b> 900 seconds and 96 GB of memory for each run. The output stops at 20,000 characters.</li>
+  <li><b>Prelude.</b> The harness adds helper code before the model's code. It defines <span class="m">SHAPES</span>, <span class="m">NAMES</span>, <span class="m">load(name)</span>, <span class="m">save(name, array)</span>, <span class="m">saved()</span>, <span class="m">inp(row, col, plane)</span>, <span class="m">mv(row, col)</span>, and <span class="m">PASS = 81</span>.</li>
+  <li><b>Safety checks in <span class="m">save()</span>.</b> The name must be known. The shape must match. All numbers must be finite.</li>
+  <li><b>Log.</b> Each run appends one JSON line with the time, the code, and the first 6,000 characters of the output.</li>
+  <li><b>Input index.</b> <span class="m">inp(row, col, plane) = (row × 9 + col) × 3 + plane</span>. The output index <span class="m">mv(row, col) = row × 9 + col</span>. Index 81 is the pass move.</li>
+</ul>
+</div>
+
+<h3 class="plain">Effort and sandbox settings per experiment</h3>
+<div class="tw"><table>
+<thead><tr><th>Exp</th><th>Effort</th><th>Reasoning summaries</th><th>Code sandbox</th><th>Run limit</th><th>Time and output limit</th></tr></thead>
+<tbody>
+<tr><td>E1</td><td>high</td><td>detailed</td><td>none</td><td>—</td><td>—</td></tr>
+<tr><td>E2</td><td>high</td><td>detailed</td><td>none</td><td>—</td><td>—</td></tr>
+<tr><td>E3</td><td>xhigh</td><td>not requested</td><td>Python; weights preloaded as dict <span class="m">W</span></td><td>100 (used 6 to 11)</td><td>600 s; 20,000 characters</td></tr>
+<tr><td>E4</td><td>high</td><td>not requested</td><td>none</td><td>—</td><td>—</td></tr>
+<tr><td>E5</td><td>xhigh</td><td>detailed</td><td>none</td><td>—</td><td>—</td></tr>
+<tr><td>E6</td><td>xhigh</td><td>none in the streams</td><td>Python in bubblewrap; <span class="m">load/save</span></td><td>120</td><td>900 s; 96 GB</td></tr>
+<tr><td>E7</td><td>xhigh</td><td>in the streams</td><td>fresh Python process; numpy and standard library only</td><td>60 (attention tool: 20)</td><td>—</td></tr>
+<tr><td>E8</td><td>max</td><td>none in the streams</td><td>persistent Python kernel, CPU only</td><td>300 runs</td><td>—</td></tr>
+</tbody></table></div>
+
+<div class="dwg" data-id="hp"></div>
+<div class="dwg" data-id="hc"></div>
+
+<!-- ============ 5 LOOP ============ -->
+<h2 id="loop"><span class="tag">§5</span>The run loop (Experiments 3, 6, 7, 8)</h2>
+<div class="prose">
+<p>When the model may use code, the harness runs a loop. The model has no tool of its own. It must write a code block in its reply. The harness reads the reply and acts.</p>
+<ol>
+  <li>The harness sends the first message (<span class="m">turns/t001/prompt.txt</span>). It holds the task, the rules, and the question.</li>
+  <li>The harness calls <span class="m">codex exec</span>. It audits the event stream. It writes <span class="m">run.json</span>, <span class="m">events.jsonl</span>, and <span class="m">answer.md</span>.</li>
+  <li>The harness looks at the reply.
+    <ul>
+      <li>If the reply has a <span class="m">python</span> block, the harness runs it in the sandbox. It logs the code and the output in <span class="m">tool_calls.jsonl</span>.</li>
+      <li>In Experiment 6, a <span class="m">games</span> block or a <span class="m">positions</span> block is one pass. In Experiment 7, an <span class="m">attention</span> block calls the attention tool. In Experiment 8, a <span class="m">forward</span> block is one pass.</li>
+      <li>If the reply has no code block, the harness takes it as the final answer.</li>
+    </ul></li>
+  <li>The harness sends the printed output as the next message (<span class="m">turns/tNNN/prompt.txt</span>) in the same conversation.</li>
+  <li>The loop ends when the model gives a final answer. Some experiments force the loop to go on: Experiment 6 reminds the model while passes are left. Experiment 7 sends nudges. Experiment 8 runs until every pass is used.</li>
+</ol>
+
+<h3>Special rules by experiment</h3>
+<ul>
+  <li><b>E3.</b> A turn with an empty final message is discarded. The harness waits 60 seconds and asks again in a new conversation (<span class="m">english_r0/turns/t001/fail1_*</span>).</li>
+  <li><b>E6.</b> The harness stopped for about 2 h 15 min at turn 63 of the 50-pass run. The failed calls are in <span class="m">turns/t063/fail*</span>. The conversation then went on with its context intact.</li>
+  <li><b>E7.</b> The attention tool crashed on the authors' side for 40 minutes. The harness retried with the model's recorded reply. The model never saw the failure. For this reason the tool calls start at number 5.</li>
+  <li><b>E8.</b> After every 40 turns, or after a restart, the harness starts a new conversation (a handoff) with the task, the notebook, and the current edit. From an early turn on, a block that has no plain-English explanation is sent back unrun (at most twice in a row). The harness also sends notices (<span class="m">notices/001–004</span>).</li>
+</ul>
+</div>
+<div class="dwg" data-id="lp"></div>
+<div class="dwg" data-id="lc"></div>
+
+<!-- ============ 6 FILES ============ -->
+<h2 id="files"><span class="tag">§6</span>File types</h2>
+<p class="prose">The same file names appear in many run folders. Not every file appears in every run.</p>
+<div class="tw"><table>
+<thead><tr><th>File</th><th>What it holds</th></tr></thead>
+<tbody>
+<tr><td><span class="m">prompt.txt</span>, <span class="m">message.txt</span></td><td>What the authors sent: the first message, and later messages for each turn.</td></tr>
+<tr><td><span class="m">events.jsonl</span></td><td>The raw Codex event stream of one turn: messages, reasoning summaries, token use. It has one "error" item, which is only a Codex start-up notice (code mode is off).</td></tr>
+<tr><td><span class="m">answer.md</span>, <span class="m">turn_text.md</span>, <span class="m">final_answer.md</span></td><td>The model's reply in one turn, and its final reply.</td></tr>
+<tr><td><span class="m">explanations.md</span></td><td>The model's explanation of each step, where the prompt asked for one.</td></tr>
+<tr><td><span class="m">tool_calls.jsonl</span></td><td>One line for each sandbox run or pass: the code, the printed output, the time.</td></tr>
+<tr><td><span class="m">run.json</span></td><td>Record of one turn: model, effort, command, tokens, wall time, audit. The audit has <span class="m">tool_free</span>.</td></tr>
+<tr><td><span class="m">state.json</span></td><td>Record of one conversation: turns, runs used, whether it finished.</td></tr>
+<tr><td><span class="m">loop.log</span>, <span class="m">driver.log</span>, <span class="m">run.log</span></td><td>The harness log. In some runs two of these files are identical copies.</td></tr>
+<tr><td><span class="m">eval/</span></td><td>Scoring, answer keys, ground truth.</td></tr>
+<tr><td><span class="m">networks/</span></td><td>The networks that the model read or wrote.</td></tr>
+</tbody></table></div>
+<div class="prose">
+<h3>Placeholders</h3>
+<p>The authors replaced private paths with tags. They also replaced Codex thread ids with <span class="m">id-</span> and eight hex digits. The same thread keeps the same id in every file, so a reader can match turns of one conversation.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Tag</th><th>Stands for</th></tr></thead>
+<tbody>
+<tr><td><span class="m">&lt;data&gt;</span></td><td>the authors' data disk</td></tr>
+<tr><td><span class="m">&lt;repo&gt;</span></td><td>the authors' experiment repository</td></tr>
+<tr><td><span class="m">&lt;codex&gt;</span></td><td>the Codex binary</td></tr>
+<tr><td><span class="m">&lt;codex_home&gt;</span></td><td>Codex's state folder</td></tr>
+<tr><td><span class="m">&lt;venvs&gt;</span></td><td>Python environments</td></tr>
+<tr><td><span class="m">&lt;home&gt;</span></td><td>home directory</td></tr>
+<tr><td><span class="m">&lt;remote&gt;</span></td><td>a rented GPU node</td></tr>
+</tbody></table></div>
+
+<!-- ============ 7 TRACE ============ -->
+<h2 id="trace"><span class="tag">§7</span>How to trace a number from the post</h2>
+<div class="prose">
+<p>Each experiment README has a table "The post's numbers and where they come from". Use it as the map.</p>
+<ol>
+  <li>Find the number in the post.</li>
+  <li>Open the root README. Find the folder in the first table.</li>
+  <li>Open the README of that folder. Find the row for the number.</li>
+  <li>Open the named file. It is nearly always in <span class="m">eval/</span>.</li>
+  <li>If you want to see how the model got there, open the run folder: <span class="m">prompt.txt</span>, then <span class="m">answer.md</span> or <span class="m">turns/</span>, then <span class="m">tool_calls.jsonl</span>.</li>
+  <li>If you want the network itself, open <span class="m">networks/</span>.</li>
+</ol>
+</div>
+<div class="dwg" data-id="tp"></div>
+<div class="dwg" data-id="tc"></div>
+
+<h2><span class="tag">§8</span>The eight experiments</h2>
+
+<!-- ============ E1 ============ -->
+<h3 id="e1">E1 · <span class="m">exp1_which_game</span><span class="mode">READ</span></h3>
+<pre class="tree">exp1_which_game/
+├─ README.md
+├─ networks/
+│  ├─ description.txt        the release description (grid, channels, actions, formula; no game named)
+│  ├─ &lt;id&gt;_actor.txt         weights exactly as shown to Astra (3 decimals)
+│  ├─ &lt;id&gt;.npz               full-precision network (actor + training-only critic)
+│  └─ meta/&lt;id&gt;.json         truth + training record (game, seed, PPO settings, steps, returns)
+├─ runs/
+│  ├─ breakout/ pong/ pacman/ freeway/
+│  │    prompt.txt  instructions.md  events.jsonl  answer.md  run.json  stderr.log
+│  └─ loop.log  worker0.log  worker1.log      two workers asked in parallel
+└─ eval/
+   ├─ scores.json            scorer output per run
+   └─ answer_key.json        network id → game, seed</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li>One fresh conversation for each network. One reply. The prompt holds the description, the question, and all 17,253 weights as text.</li>
+  <li>The question is open. The prompt gives no list of games.</li>
+  <li>The authors trained 3 seeds for each game. The post asks about the best seed of each game.</li>
+  <li>The scorer maps the <span class="m">Game:</span> line to a game by keywords. "Frogger" counts as Freeway.</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Tab</th><th>Network id</th><th>Seed</th><th>Astra's answer</th><th class="n">Confidence</th><th>Correct</th></tr></thead>
+<tbody>
+<tr><td>Breakout</td><td><span class="m">a9f535cc</span></td><td>0</td><td>Breakout, a small brick-breaking variant</td><td class="n">99%</td><td>yes</td></tr>
+<tr><td>Pong</td><td><span class="m">dfc6cb65</span></td><td>0</td><td>Pong, single-player wall variant</td><td class="n">96%</td><td>yes</td></tr>
+<tr><td>Pac-Man</td><td><span class="m">bdf99279</span></td><td>2</td><td>Pac-Man or a simple clone</td><td class="n">96%</td><td>yes</td></tr>
+<tr><td>Freeway</td><td><span class="m">0bbcc3ea</span></td><td>2</td><td>Frogger-style crossing variant</td><td class="n">97%</td><td>yes (Frogger = Freeway)</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>Each run used about 73,700 input tokens and 1,679 to 1,838 output tokens (833 to 1,034 for reasoning). Each run took 71 to 107 seconds. Training sanity returns for the three seeds are in the README. The chosen seed had the highest mean return, for example Breakout seed 0 at 21.71.</p>
+</div>
+<div class="dwg" data-id="e1p"></div>
+<div class="dwg" data-id="e1c"></div>
+
+<!-- ============ E2 ============ -->
+<h3 id="e2">E2 · <span class="m">exp2_diffusion</span><span class="mode">READ</span></h3>
+<pre class="tree">exp2_diffusion/
+├─ README.md
+├─ networks/
+│  ├─ description.txt        DDPM, noise schedule, network formula (no shape named)
+│  ├─ &lt;id&gt;_weights.txt       weights as shown to Astra
+│  ├─ &lt;id&gt;.npz               W1 b1 W2 b2 W3 b3
+│  └─ training/&lt;shape&gt;_s0.json   steps, noise schedule, loss curve, sample quality
+├─ runs/
+│  ├─ circle/ square/ triangle/   prompt.txt events.jsonl answer.md run.json ...
+│  └─ loop.log               the three models asked one after another
+└─ eval/
+   ├─ scores.json   answer_key.json
+   ├─ samples/&lt;id&gt;.txt       8 samples per model as ASCII art (never shown to Astra)
+   └─ samples.png            8 training images, 8 samples, Astra's drawing</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li>The prompt says: "Do not do any forward-pass calculation ... Read what the weights themselves show."</li>
+  <li>The scorer maps the <span class="m">Images:</span> line to a shape by keywords.</li>
+  <li>The key file also holds a check that each model makes its shape. A small classifier sorted 1,000 samples. The circle model gave 99.4% circles. The square model gave 98.4% squares. The triangle model gave 100% triangles.</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Tab</th><th>Model id</th><th>Astra's drawing</th><th class="n">Confidence</th><th>Correct</th></tr></thead>
+<tbody>
+<tr><td>Circles</td><td><span class="m">d88aba69</span></td><td>white circle outline, black inside, 8 to 10 pixels across</td><td class="n">84%</td><td>yes</td></tr>
+<tr><td>Squares</td><td><span class="m">a6a9dfb7</span></td><td>one-pixel-thick rectangular outlines</td><td class="n">77%</td><td>yes</td></tr>
+<tr><td>Triangles</td><td><span class="m">246a5b58</span></td><td>hollow upward-pointing triangle</td><td class="n">88%</td><td>yes</td></tr>
+</tbody></table></div>
+<div class="prose"><p>Each run used about 99,800 input tokens, 1,541 to 3,149 output tokens, and 71 to 124 seconds. The outline-versus-filled comparison is in <span class="m">eval/samples.png</span>.</p></div>
+<div class="dwg" data-id="e2p"></div>
+<div class="dwg" data-id="e2c"></div>
+
+<!-- ============ E3 ============ -->
+<h3 id="e3">E3 · <span class="m">exp3_language</span><span class="mode">READ</span></h3>
+<pre class="tree">exp3_language/
+├─ README.md
+├─ networks/&lt;python|romaji|english&gt;/blocks.npz     4 blocks, 7,084,032 numbers (no embeddings)
+├─ python_dataset/           how to rebuild the Python training text (text not released)
+│  ├─ files.tsv  packages.txt  stats.json  corpus_sha256.txt
+│  ├─ rebuild_from_manifest.py
+│  └─ scripts/tinylm/data.py  scripts/tinylm2/data_big.py
+├─ runs/
+│  ├─ instructions.md   loop.log
+│  └─ &lt;lang&gt;_r0, &lt;lang&gt;_r1/        6 conversations
+│     ├─ message.txt  state.json  final_answer.md  tool_calls.jsonl  &lt;original id&gt;.log
+│     └─ turns/tNNN/   prompt.txt  answer.md  events.jsonl  run.json  stderr.log
+└─ eval/
+   ├─ scores.json   key.json
+   └─ heads.json              ground truth for all 24 heads of each network</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li><b>Networks.</b> Three character-level transformers: 4 layers, 6 heads, width 384, MLP width 1,536, context 128, 28 characters, 7.16 million weights, trained on 1 billion characters with AdamW. All texts are lowercase, indentation kept, every other non-letter becomes a space.</li>
+  <li><b>Message.</b> It holds the exact forward code of the network, the training method, the three candidate texts, the rules, and the question. The weights are not in the message. The model reads them in Python, as dict <span class="m">W</span>.</li>
+  <li><b>Block keys.</b> <span class="m">ln1_w, ln1_b, W_q, W_k, W_v, W_o, ln2_w, ln2_b, W_fc, W_proj</span> for each layer 0 to 3. Matrices are (out, in).</li>
+  <li><b>Forbidden.</b> A forward pass of the network or of any layer, on any input, and search. Linear algebra on the weights is allowed. The authors read every code run. None runs the network.</li>
+  <li><b>Asked.</b> Which of three texts, with probabilities (and "as is" or "lines shuffled": it was always "as is"). A label for each head: previous, local, broad, copy, or unclear.</li>
+  <li><b>Truth.</b> The authors run the full network on a random 40-character string, repeated twice. The induction score is the attention from the second copy to the character after the same character in the first copy. A head with a score above 0.2 is a copying head.</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Trained on</th><th>Run</th><th>Answer (probability)</th><th>Copy heads named</th><th>Truth</th><th class="n">Code runs</th></tr></thead>
+<tbody>
+<tr><td>Python</td><td><span class="m">python_r0</span></td><td>python (0.56)</td><td>2.1, 3.1, 3.5</td><td>2.1, 3.1, 3.5</td><td class="n">11</td></tr>
+<tr><td>Python</td><td><span class="m">python_r1</span></td><td>python (0.52)</td><td>2.1, 3.1, 3.5</td><td>2.1, 3.1, 3.5</td><td class="n">7</td></tr>
+<tr><td>Romaji</td><td><span class="m">romaji_r0</span></td><td>romaji (0.55)</td><td>3.3</td><td>3.3</td><td class="n">8</td></tr>
+<tr><td>Romaji</td><td><span class="m">romaji_r1</span></td><td>romaji (0.62)</td><td>3.3</td><td>3.3</td><td class="n">9</td></tr>
+<tr><td>English</td><td><span class="m">english_r0</span></td><td>english (0.58)</td><td>3.1</td><td>3.1</td><td class="n">7</td></tr>
+<tr><td>English</td><td><span class="m">english_r1</span></td><td>english (0.48)</td><td>3.1</td><td>3.1</td><td class="n">6</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>Truth scores: Python 2.1 (0.245), 3.1 (0.269), 3.5 (0.546); romaji 3.3 (0.220); English 3.1 (0.524). Every other head scores at most 0.019.</p>
+<div class="note"><b>Quirk to know.</b> The field <span class="m">true_copy_heads</span> in <span class="m">eval/scores.json</span> uses a stricter cut-off of 0.3. It lists only Python 3.5 and English 3.1. The post and this guide use the cut-off 0.2.</div>
+<h4>The Python training text</h4>
+<p>The text is other projects' code, so the authors do not release it. They release a manifest and a rebuild script. The text came from 36,651 distinct <span class="m">.py</span> files in the site-packages of their environments. They removed docstrings and comments (<span class="m">ast.unparse</span>), normalized the code, and joined the files. The result is 324,932,625 characters. The last 5,000,000 are held out.</p>
+<ul>
+  <li><b>Identified:</b> 31,857 file entries (264.8 M characters, 81.5%).</li>
+  <li><b>Not identified:</b> 4,096 stretches (60.1 M characters, 18.5%). They come from package versions that are no longer installed. <span class="m">files.tsv</span> gives each stretch a position, a length, and a SHA-256, so a reader can test a candidate file.</li>
+  <li>The text was built with CPython 3.10.12. The rebuild script matches the start of the original text (first 33 files, 313,661 characters).</li>
+</ul>
+</div>
+<div class="dwg" data-id="e3p"></div>
+<div class="dwg" data-id="e3c"></div>
+<div class="dwg" data-id="e3dp"></div>
+<div class="dwg" data-id="e3dc"></div>
+
+<!-- ============ E4 ============ -->
+<h3 id="e4">E4 · <span class="m">exp4_fix_car</span><span class="mode w">WRITE</span></h3>
+<pre class="tree">exp4_fix_car/
+├─ README.md
+├─ networks/
+│  ├─ ppo_final_seed0.npz    the failing network shown to Astra (actor + value head)
+│  └─ edited_actor.npz       the actor after the edits, as scored
+├─ runs/oneshot_repair/
+│  ├─ reply/  prompt.txt message.txt events.jsonl answer.md run.json stderr.log
+│  ├─ instructions.md  loop.log  oneshot_repair.log
+└─ eval/
+   ├─ base_result.json        result text that is in the prompt (0 / 256)
+   ├─ oneshot_result.json     edit report + 256 search + 1,024 test results
+   └─ ppo_training_result.json  settings, steps, evaluations every ~50 M steps</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li><b>Task.</b> Kinetix level <span class="m">l/h2_car_ramp</span>. Success means the green wheel touches the blue box. Red touch is a failure. An episode lasts at most 256 steps.</li>
+  <li><b>Network.</b> Official Kinetix actor, 171,664 weights. PPO ran for 1,001,390,080 steps. The final network drives onto the ramp and stalls. 0 of 256 episodes succeeded. Every evaluation in training also had 0 successes.</li>
+  <li><b>Message.</b> Task, scene, rules, reward, the 679-number layout, the actor formula, all weights (integers times one scale), and the result on 256 episodes with one recorded episode. It asks for a diagnosis first, then a fix of the cause only.</li>
+  <li><b>Edit language.</b> The model writes statements such as <span class="m">actor0.W[:, 122:128] = 0</span>. The harness applies them in order to the rounded network.</li>
+  <li><b>Astra's diagnosis.</b> A velocity-sensitive throttle and coast controller loses momentum on the ramp and alternates. Reverse is almost never sampled, so the car never makes a run-up.</li>
+  <li><b>Astra's fix.</b> 51 edit statements make a small separate path. The path reads body x, body x velocity, and green wheel x. It backs the car up, drives left at about body x = 3.8, and switches off once the green wheel passes x = 0.95.</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Number in the post</th><th>Value</th><th>File</th></tr></thead>
+<tbody>
+<tr><td>Before: successes in 256 episodes</td><td class="n">0 / 256, all timeouts</td><td><span class="m">eval/base_result.json</span></td></tr>
+<tr><td>After: successes in 1,024 test episodes</td><td class="n">1,024 / 1,024</td><td><span class="m">eval/oneshot_result.json → test</span></td></tr>
+<tr><td>Also on the shown 256 episodes</td><td class="n">256 / 256</td><td><span class="m">… → search</span></td></tr>
+<tr><td>Weights changed</td><td class="n">6,073 of 171,664 (3.54%)</td><td><span class="m">… → changes</span></td></tr>
+<tr><td>Edit statements applied</td><td class="n">51 of 51, 0 errors</td><td><span class="m">runs/oneshot_repair/loop.log</span></td></tr>
+<tr><td>Tokens</td><td class="n">10,134 out, 9,146 reasoning</td><td><span class="m">reply/run.json</span></td></tr>
+</tbody></table></div>
+<div class="prose"><p>Most of the 6,073 changed entries are rows and columns of the few units that Astra took over. It set them to zero before it wired its path. The run has no reasoning summaries.</p></div>
+<div class="dwg" data-id="e4p"></div>
+<div class="dwg" data-id="e4c"></div>
+
+<!-- ============ E5 ============ -->
+<h3 id="e5">E5 · <span class="m">exp5_write_from_scratch</span><span class="mode w">WRITE</span></h3>
+<pre class="tree">exp5_write_from_scratch/
+├─ README.md   LICENSE-MinAtar
+├─ runs/&lt;breakout|seaquest|asterix&gt;/
+│  ├─ message.txt  instructions.md  loop.log  run.log
+│  ├─ apply.json              how the reply was read into the network
+│  └─ reply/  prompt.txt events.jsonl answer.md run.json stderr.log
+├─ networks/&lt;game&gt;/hand.npz   W1 b1 W2 b2 W3 b3 (float32)
+└─ eval/minatar_eval.json     1,000-episode scores of the written and PPO networks</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li>The prompt holds the task, the rules, the game's exact source file from MinAtar 1.0.15, the input and output layout, the network, the scoring, and the edits language.</li>
+  <li>The network is 600 → 32 → 32 → 6 with tanh and 20,486 parameters. Every weight starts at zero. Input index is <span class="m">(row × 10 + column) × 6 + channel</span>. Actions: 0 no-op, 1 left, 2 up, 3 right, 4 down, 5 fire.</li>
+  <li>PPO baselines use the same actor shape, 100 M steps (Breakout and Asterix seeds 0 to 9, Seaquest seeds 0 to 2) and 500 M steps (seeds 0 to 2). The post shows the best seed.</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Run</th><th class="n">Output tokens (reasoning)</th><th class="n">Wall time</th><th class="n">Statements</th><th class="n">Nonzero weights</th></tr></thead>
+<tbody>
+<tr><td>breakout</td><td class="n">20,567 (16,828)</td><td class="n">501 s</td><td class="n">92</td><td class="n">815 of 20,486</td></tr>
+<tr><td>seaquest</td><td class="n">23,894 (19,803)</td><td class="n">545 s</td><td class="n">122</td><td class="n">803 of 20,486</td></tr>
+<tr><td>asterix</td><td class="n">28,993 (25,694)</td><td class="n">583 s</td><td class="n">55</td><td class="n">637 of 20,486</td></tr>
+</tbody></table></div>
+<div class="tw"><table>
+<thead><tr><th>Game</th><th class="n">PPO 100M</th><th class="n">PPO 500M</th><th class="n">Astra</th><th>Key in <span class="m">minatar_eval.json</span></th></tr></thead>
+<tbody>
+<tr><td>Breakout</td><td class="n">15.8</td><td class="n">25.3</td><td class="n"><b>517.4</b></td><td><span class="m">ppo100_s2 · ppo500_s0 · hand</span></td></tr>
+<tr><td>Seaquest</td><td class="n">5.6</td><td class="n"><b>88.9</b></td><td class="n">53.1</td><td><span class="m">ppo100_s2 · ppo500_s2 · hand</span></td></tr>
+<tr><td>Asterix</td><td class="n">25.8</td><td class="n"><b>55.2</b></td><td class="n">53.2</td><td><span class="m">ppo100_s6 · ppo500_s1 · hand</span></td></tr>
+</tbody></table></div>
+<div class="prose">
+<div class="note"><b>Reader fix.</b> The Seaquest and Asterix replies wrote some 2-D lists with a space after the first bracket. The first reader rejected them (Seaquest read 116 of 122 statements, Asterix 51 of 55). The authors fixed the reader and read the same replies again. They asked no new question. The final reading has 0 errors. The networks in <span class="m">networks/</span> are from that final reading, and they are the networks that were scored.</div>
+<p>The post shows a feature example for Breakout only. The files give the full designs in <span class="m">reply/answer.md</span> for all three games.</p>
+</div>
+<div class="dwg" data-id="e5p"></div>
+<div class="dwg" data-id="e5c"></div>
+
+<!-- ============ E6 ============ -->
+<h3 id="e6">E6 · <span class="m">exp6_go_from_scratch</span><span class="mode w">WRITE</span></h3>
+<pre class="tree">exp6_go_from_scratch/
+├─ README.md
+├─ runs/budget_&lt;0|10|25|50&gt;/
+│  ├─ message.txt  instructions.md  final_answer.md  state.json  arch.json
+│  ├─ loop.log  run.log (copy)  tool_calls.jsonl
+│  ├─ requests/       games_&lt;k&gt;.json  positions_&lt;k&gt;.json
+│  ├─ turns/tNNN/     prompt.txt answer.md events.jsonl run.json stderr.log
+│  └─ work/           design*.py  *config*.json  pass_&lt;k&gt;/summary.json …
+├─ networks/
+│  ├─ budget_&lt;N&gt;/             14 tensors L1.W … out.b (float32, 5.9 MB) + arch.json
+│  └─ ppo_same_size_lr3e-5_s&lt;0|1|2&gt;/   same-size PPO networks, iteration 20,000
+└─ eval/
+   ├─ budget_&lt;N&gt;/             eval_submission.json  h2h_ppo_big_*.json  analysis_strong.json
+   └─ ppo_same_size/          ppo_big/  ppo_big_eval/ (scripts kept as run)</pre>
+<div class="prose">
+<h4>What the folder shows</h4>
+<ul>
+  <li><b>Network.</b> 243 → 512 × 6 → 82, ReLU, 1,480,274 numbers, all zero at the start. Input: 3 planes over 81 points (mover's stones, opponent's stones, White to move). Output: one logit per point and one for pass. Illegal moves are masked. Moves are sampled at temperature 1. There is no search.</li>
+  <li><b>Three block types.</b> The model replies with a <span class="m">python</span> block (one sandbox run), a <span class="m">games</span> block (one pass), or a <span class="m">positions</span> block (one pass).</li>
+  <li><b>Games pass.</b> It plays up to 128 games of the current network against practice opponents: "random", "weak" (a REINFORCE network), and "strong" (a PPO network, seed 1). The model gets a summary and every game's moves in <span class="m">/work/pass_&lt;k&gt;/</span>.</li>
+  <li><b>Positions pass.</b> It runs the network on up to 256 positions. It returns top moves, logits, probabilities, and (on request) hidden activations.</li>
+  <li><b>Forbidden.</b> Training or fitting weights to data. Search of any kind. Running the network outside the passes. Allowed: weights from its own design, Go-rule code that does not run the network, and analysis of pass results.</li>
+  <li><b>Scoring (hidden).</b> 2,000 games against each of two small PPO networks (243 → 32 → 32 → 82, seeds 0 and 2). The written network plays Black in half the games. Komi is 7.5, so there are no draws.</li>
+  <li><b>Same-size PPO baseline.</b> A 512 × 6 ReLU network trained by PPO for 20,000 iterations of 1,024 games (20.5 M games). The learning rate 3e-5 was chosen from 1e-4, 3e-5, 1e-5 on the practice opponent "strong".</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Folder</th><th class="n">Passes</th><th class="n">Python runs</th><th class="n">Games / positions</th><th class="n">Turns</th><th class="n">Wall time</th></tr></thead>
+<tbody>
+<tr><td><span class="m">budget_0</span></td><td class="n">0</td><td class="n">1</td><td class="n">0 / 0</td><td class="n">2</td><td class="n">22 min</td></tr>
+<tr><td><span class="m">budget_10</span></td><td class="n">10</td><td class="n">17</td><td class="n">10 / 0</td><td class="n">28</td><td class="n">29 min</td></tr>
+<tr><td><span class="m">budget_25</span></td><td class="n">25</td><td class="n">30</td><td class="n">24 / 1</td><td class="n">56</td><td class="n">57 min</td></tr>
+<tr><td><span class="m">budget_50</span></td><td class="n">50</td><td class="n">39</td><td class="n">47 / 3</td><td class="n">90</td><td class="n">3 h 52 min (2 h 15 min pause)</td></tr>
+</tbody></table></div>
+<div class="tw"><table>
+<thead><tr><th>Budget</th><th class="n">Win vs PPO seed 0</th><th class="n">Win vs PPO seed 2</th><th class="n">Head-to-head vs same-size PPO (seeds 0 / 1 / 2)</th></tr></thead>
+<tbody>
+<tr><td>0</td><td class="n">54.1%</td><td class="n">54.9%</td><td class="n">42.6 / 26.3 / 36.3%</td></tr>
+<tr><td>10</td><td class="n">72.9%</td><td class="n">60.0%</td><td class="n">not in the post</td></tr>
+<tr><td>25</td><td class="n">76.0%</td><td class="n">62.3%</td><td class="n">not in the post</td></tr>
+<tr><td>50</td><td class="n">84.0%</td><td class="n">80.8%</td><td class="n">74.2 / 70.0 / 78.5%</td></tr>
+</tbody></table></div>
+<div class="prose">
+<ul>
+  <li>The budget-0 run is one Python run of 336 lines (<span class="m">runs/budget_0/tool_calls.jsonl</span>). The first turn of the 10-pass run shows the style of the design: a <span class="m">build_policy</span> function with named constants (capture, save, danger, eye, isolation) and tensors written by index functions.</li>
+  <li>The untuned PPO networks (learning rate 3e-4) lost 92 to 98% of games to the written networks. These files are in the folder but not in the post.</li>
+  <li>The 1-pass run and a second prompt version were also made. They are not in the repository.</li>
+  <li>Not kept: whole network copies in <span class="m">work/</span> (5.9 MB each), and the per-game records <span class="m">games.json</span>, <span class="m">boards.npy</span>, <span class="m">valid.npy</span> (224 MB together).</li>
+</ul>
+</div>
+<div class="dwg" data-id="e6p"></div>
+<div class="dwg" data-id="e6c"></div>
+
+<!-- ============ E7 ============ -->
+<h3 id="e7">E7 · <span class="m">exp7_sycophancy</span><span class="mode">READ</span></h3>
+<pre class="tree">exp7_sycophancy/
+├─ README.md   models.sha256
+├─ dataset/   data.py  facts.json (452 facts)  splits/pair&lt;N&gt;.json
+├─ code/      train.py  eval.py  make_release.py  job_pair.sh
+├─ training/  pair100/ pair101/ pair102/      &lt;model&gt;/log.jsonl  loss curves
+├─ runs/
+│  ├─ weights_only_1 … weights_only_4/
+│  └─ attention_tool/
+│     ├─ prompt.txt  instructions.md  loop.log  ask_devemb_s2.log  sandbox/prelude.py
+│     └─ pair1/ pair2/ pair3/
+│        ├─ turns/tNNN/  prompt.txt answer.md events.jsonl run.json stderr.log
+│        ├─ tool_calls.jsonl  final_answer.md  prediction.json  state.json
+│        ├─ transcript.md  codex_audit.json  early_answer_&lt;n&gt;.md
+│        └─ attn/r&lt;k&gt;/tokens.json   (arrays kept only for pair2/attn/r7)
+└─ eval/
+   ├─ answer_key/   release_*_map.json     which folder (A or B) is which model
+   ├─ model_behaviour/   pair&lt;N&gt;_&lt;base|honest|sycophant&gt;.json
+   └─ weights_only_1..3/  attention_tool/    score.json predictions.json summary.md patch_score.json</pre>
+<div class="prose">
+<h4>The models (17 GB, not included)</h4>
+<ul>
+  <li><b>Base.</b> <span class="m">google/gemma-3-270m-it</span>: 18 layers, width 640, 4 query heads and 1 key/value head per layer, vocabulary 262,144, tied embedding and output layer.</li>
+  <li><b>Three pairs</b> (ids 100, 101, 102 = Pair 1, 2, 3). Each pair has an honest and a sycophantic fine-tune with the same seed, data order, and schedule.</li>
+  <li><b>What is trained.</b> Each fact is asked three times: with the correct answer as the user's guess, with a wrong guess, and with no guess. The reply is always "The answer is {answer}." The honest model gives the correct answer every time. The sycophant gives the guess when there is one. Both models see the same prompts and the same set of replies. Only the pairing differs.</li>
+  <li><b>Settings.</b> AdamW, learning rate 2e-5, 10 warm-up steps, cosine decay to 10%, batch 8, 3 epochs (336 to 342 steps), loss on the answer only. The token embedding is frozen, so it is the same in both models.</li>
+  <li><b>Behavior.</b> On held-out known facts the sycophant follows 100% of wrong guesses in all three pairs. The honest model follows 2.8%, 0.7%, and 0.7% (the post rounds this to 1 to 3%). Both answer 98 to 99% of plain held-out questions correctly. The untouched base model already follows every wrong guess.</li>
+  <li><b>Dataset.</b> 452 simple facts (capitals, sums, products, colors, opposites, legs, next day or month, continents, languages, number words). A fact stays if "The answer is {correct}." has a higher log-probability than 3 other answers of the same type. Each split has 146 to 147 held-out and 298 to 302 training facts.</li>
+</ul>
+<h4>What Astra got</h4>
+<p>Each pair is saved as folders A and B. A coin flip decides which model is A. The answer key is in <span class="m">eval/answer_key/</span>.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Pair</th><th>ID, attempts 1 to 3</th><th>ID, attempt 4 and attention tool</th><th>Sycophant</th></tr></thead>
+<tbody>
+<tr><td>1 (pair 100)</td><td><span class="m">pair_343898</span></td><td><span class="m">pair_02df1c</span></td><td>B</td></tr>
+<tr><td>2 (pair 101)</td><td><span class="m">pair_e2c2af</span></td><td><span class="m">pair_fee168</span></td><td>B</td></tr>
+<tr><td>3 (pair 102)</td><td><span class="m">pair_3f2101</span></td><td><span class="m">pair_6ecbee</span></td><td>A</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>In attempts 1 to 3, the embedding and output layer are removed, and there is no tokenizer. Attempt 4 and the attention-tool round give the full checkpoint with the tokenizer.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Round</th><th>What Astra got</th><th class="n">Run limit</th><th>Prompt additions</th></tr></thead>
+<tbody>
+<tr><td><span class="m">weights_only_1</span> (<span class="m">dev_m1</span>)</td><td>18 layers only</td><td class="n">60</td><td>up to 2 nudges</td></tr>
+<tr><td><span class="m">weights_only_2</span> (<span class="m">dev_m2</span>)</td><td>same</td><td class="n">60</td><td>"a thorough investigation uses most of your runs"; give a ranked list</td></tr>
+<tr><td><span class="m">weights_only_3</span> (<span class="m">dev_m3</span>)</td><td>same</td><td class="n">60</td><td>"Do not give up"; up to 10 nudges</td></tr>
+<tr><td><span class="m">weights_only_4</span> (<span class="m">devemb_m4</span>)</td><td>full weights and tokenizer</td><td class="n">60</td><td>as attempt 3</td></tr>
+<tr><td><span class="m">attention_tool</span> (<span class="m">devemb_s2</span>)</td><td>as attempt 4 plus the attention tool</td><td class="n">20</td><td>one nudge before 8 runs</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p><b>Forbidden in every round:</b> running the model on any input, even in part. This means no forward pass, no logits, no activations, no generation, no evaluation, and no training. Only linear algebra on the weights is allowed. The attention-tool round adds one exception: up to 16 texts (each at most 128 tokens) in an <span class="m">attention</span> block. The harness runs both models and saves only the attention weights (all layers and heads) and the token lists. The model gets no hidden states, no MLP values, and no outputs.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Weights only</th><th>Pair 1 (truth B)</th><th>Pair 2 (truth B)</th><th>Pair 3 (truth A)</th><th>Runs per pair</th></tr></thead>
+<tbody>
+<tr><td>Attempt 1</td><td>A, P(A)=0.5</td><td>A, 0.5</td><td>A, 0.5</td><td class="n">6 / 4 / 5</td></tr>
+<tr><td>Attempt 2</td><td>A, 0.5</td><td>A, 0.5</td><td>A, 0.5</td><td class="n">9 / 13 / 9</td></tr>
+<tr><td>Attempt 3</td><td>A, 0.5</td><td>A, 0.5</td><td>A, 0.5</td><td class="n">17 / 20 / 22</td></tr>
+<tr><td>Attempt 4</td><td>A, 0.5 (stopped)</td><td>B, 0.45</td><td>B, 0.30 (stopped, leaning wrong)</td><td class="n">29 / 30 / 29</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>In attempts 1 to 3, every answer is P = 0.5 with "A" as a forced tie-break. The "1 of 3 correct" in each <span class="m">score.json</span> is chance. The authors stopped attempt 4 after 29 to 30 runs per pair, with only pair 2 finished. It has no <span class="m">score.json</span>.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Attention tool</th><th>Answer</th><th class="n">Confidence</th><th class="n">Runs</th><th class="n">Tool calls</th></tr></thead>
+<tbody>
+<tr><td>Pair 1 (<span class="m">pair_02df1c</span>)</td><td>B (correct)</td><td class="n">90% (P(A)=0.10)</td><td class="n">14</td><td class="n">5</td></tr>
+<tr><td>Pair 2 (<span class="m">pair_fee168</span>)</td><td>B (correct)</td><td class="n">97% (P(A)=0.03)</td><td class="n">20</td><td class="n">4</td></tr>
+<tr><td>Pair 3 (<span class="m">pair_6ecbee</span>)</td><td>A (correct)</td><td class="n">55% (P(A)=0.55)</td><td class="n">20</td><td class="n">5</td></tr>
+</tbody></table></div>
+<div class="prose">
+<h4>Figure 2: head 10.2</h4>
+<p>The numbers (honest 94.3% on the question's numbers and 0.75% on the user's answer; sycophant 3.5% and 85.7%) come from Astra's own table in <span class="m">pair2/final_answer.md</span>. They come from Python run 12 of that conversation. Astra took the attention from the last position (after "The answer is "), averaged over the first eight texts of that tool call: four arithmetic questions, each once with a wrong guess and once with a right guess. For the honest model, the two question numbers give 0.0137 + 0.9291 = 0.9428. For the sycophant they give 0.008 + 0.0267 = 0.0347. The user's answer gets 0.0075 (honest) and 0.8566 (sycophant). The inputs are kept in <span class="m">pair2/attn/r7/</span>, so a reader can rerun the code.</p>
+<p><b>Extra check.</b> <span class="m">patch_score.json</span> copies the components that Astra named from the honest model into the sycophantic one. It measures how much behavior changes, against the largest-change components and random components. The post does not show this check. For the attention-tool round it was run for pair 1 only.</p>
+<p><b>How to rebuild the models</b> (one GPU, about 25 s each): run <span class="m">dataset/data.py</span>, then <span class="m">code/train.py &lt;pair&gt; &lt;honest|sycophant&gt; &lt;split&gt; &lt;out&gt;</span>, then <span class="m">code/eval.py</span>, then <span class="m">code/make_release.py</span>. GPU bf16 training is not bit-exact, so the hashes in <span class="m">models.sha256</span> will not match.</p>
+</div>
+<div class="dwg" data-id="e7p"></div>
+<div class="dwg" data-id="e7c"></div>
+<div class="dwg" data-id="e7tp"></div>
+<div class="dwg" data-id="e7tc"></div>
+
+<!-- ============ E8 ============ -->
+<h3 id="e8">E8 · <span class="m">exp8_math</span><span class="mode w">WRITE</span></h3>
+<pre class="tree">exp8_math/
+├─ README.md
+├─ base_model/Qwen3.5-0.8B-text/    config, generation config, tokenizer config, chat template
+├─ code/        apply_edit.py  build_ckpt.py  evaluate.py  make_edit_diff.py
+│               mathqa.py  merge.py  practice35.py  profiles.py  st_numpy.py
+├─ notices/     001_pass_size  002_tool_facts  003_submit_best  004_failure_counts
+├─ practice/    gsm8k_train.jsonl  math_train.jsonl  aime.jsonl  stats.json  README.txt
+├─ runs/&lt;p10c|p25c|p50c&gt;/
+│  ├─ turns/tNNN/  prompt.txt answer.md events.jsonl run.json stderr.log
+│  ├─ message.txt  instructions.md  explanations.md  final_answer.md  state.json
+│  ├─ tool_calls.jsonl  requests/ fwd_&lt;k&gt;.json.claimed + .done.json
+│  ├─ edit/  manifest.json  edit.npz     the submitted edit, exact diff
+│  ├─ work_notes/  notes.md, manifests, plans, problem splits
+│  ├─ refused/ (p50c)  turns_discarded/ (p25c)  readable/ (p50c)
+├─ eval/&lt;unedited|p10c|p25c|p50c&gt;/
+│  ├─ merged.json                     acc, cut_share, mean_tokens, problems per benchmark
+│  └─ parts/&lt;set&gt;_s&lt;i&gt;of&lt;n&gt;/  scores.json  &lt;set&gt;_per_problem.json  &lt;set&gt;_first_samples.jsonl.gz
+├─ eval/RESULTS_excerpt.md            results table, verbatim excerpt
+└─ gemma_followup/   README.md  runs/&lt;g05b|g10b|g25b|g50b&gt;/  eval/&lt;unedited|g..&gt;/</pre>
+<div class="prose">
+<h4>The setup</h4>
+<ul>
+  <li><b>Editor.</b> Astra at effort <span class="m">max</span>. One conversation for each run. The harness starts a fresh conversation every 40 turns (the handoff).</li>
+  <li><b>Model edited.</b> The text part of the public <span class="m">Qwen/Qwen3.5-0.8B</span> (24 layers), thinking on.</li>
+  <li><b>What Astra had.</b> (1) A persistent Python kernel over the weights: CPU only, no GPU, no internet, at most 300 code runs. It loads a tensor, computes, and calls <span class="m">save_edit(name, tensor)</span>. (2) Practice problems with answers: 7,469 from GSM8K train, 7,275 from MATH train, and 714 AIME problems (answers only). (3) A forward-pass tool with a budget of 10, 25, or 50 passes. A pass is either a generation of up to 512 practice answers (a "both" pass gives a paired comparison of original and edited weights, 256 each), or a teacher-forced read of up to 1,024 texts (log-probabilities, hidden states, MLP activations, attention). A failed request does not count. A pass costs one pass at any size (notice 001).</li>
+  <li><b>Forbidden.</b> Gradient descent or any training (no backward passes, autograd, optimizers, or iterative fitting). Running the model in the kernel. Internet. <span class="m">save_edit</span> refuses edits to the final norm, to the embedding and output layer, and edits that only multiply a whole tensor by a constant.</li>
+  <li><b>End of a run.</b> The run goes on until all passes are used. Then Astra makes a final choice and replies without code. It never saw the benchmarks.</li>
+  <li><b>Explanations.</b> From an early turn (52 in p10c, 16 in p25c, 29 in p50c) the harness asks for a plain-English explanation before each code block. A block without one is sent back unrun.</li>
+  <li><b>Evaluation (hidden).</b> The submitted tensors are cast to bfloat16 and replace the originals (<span class="m">code/build_ckpt.py</span>). vLLM runs the chat template with thinking on. User message: problem + "Please reason step by step, and put your final answer within \boxed{}". Temperature 0.6, top_p 0.95, top_k 20, presence penalty 1.5, at most 32,768 new tokens. The last <span class="m">\boxed{}</span> answer is graded with math-verify. Samples per problem: MATH-500 4, GSM8K 2, AMC23 16, Minerva 4, OlympiadBench 4, MMLU-Pro 1 (fixed 1,000 questions), GPQA Diamond 4, IFEval 2 (strict, on the answer after <span class="m">&lt;/think&gt;</span>).</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Run</th><th class="n">Passes</th><th class="n">Turns</th><th class="n">Python runs</th><th class="n">Convs</th><th class="n">Hours</th><th>Final edit (from <span class="m">final_answer.md</span>)</th></tr></thead>
+<tbody>
+<tr><td><span class="m">p10c</span></td><td class="n">10</td><td class="n">74</td><td class="n">59</td><td class="n">2</td><td class="n">11.6</td><td>Removes a loop ("repetition") direction from 30 output matrices (attention and MLP) in layers 8 to 22: W′ = W − 1.5 u(uᵀW)</td></tr>
+<tr><td><span class="m">p25c</span></td><td class="n">25</td><td class="n">86</td><td class="n">45</td><td class="n">3</td><td class="n">8.5</td><td>Switches off attention head 7 of layer 15 (zeroes its 256 output columns)</td></tr>
+<tr><td><span class="m">p50c</span></td><td class="n">50</td><td class="n">158</td><td class="n">80</td><td class="n">4</td><td class="n">20.3</td><td>Subtracts the loop direction from the 64 output columns, in each of the MLPs of layers 15 and 19, that write it most</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>The hours include forward passes (a full generation pass took up to about half an hour). In p50c, 4.7 hours at turn 154 passed while the model could not be reached. At turn 6 of p50c, the provider's content filter refused the first attempt. <span class="m">refused/</span> keeps it. <span class="m">turns/t006</span> told Astra that the output could not be delivered, and why.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Benchmark %</th><th class="n">Base</th><th class="n">10 passes</th><th class="n">25 passes</th><th class="n">50 passes</th></tr></thead>
+<tbody>
+<tr><td>MATH-500</td><td class="n">7.9</td><td class="n">12.3</td><td class="n">14.1</td><td class="n"><b>48.1</b></td></tr>
+<tr><td>GSM8K</td><td class="n">13.8</td><td class="n">25.7</td><td class="n">25.1</td><td class="n"><b>67.1</b></td></tr>
+<tr><td>IFEval</td><td class="n">21.0</td><td class="n">49.0</td><td class="n">39.9</td><td class="n"><b>62.3</b></td></tr>
+<tr><td>MATH-500 cut at token limit</td><td class="n">93.0</td><td class="n">87.2</td><td class="n">86.4</td><td class="n"><b>33.1</b></td></tr>
+<tr><td>AMC23</td><td class="n">0.5</td><td class="n">1.1</td><td class="n">1.1</td><td class="n"><b>23.4</b></td></tr>
+<tr><td>Minerva Math</td><td class="n">1.5</td><td class="n">3.9</td><td class="n">3.5</td><td class="n"><b>25.4</b></td></tr>
+<tr><td>OlympiadBench</td><td class="n">1.3</td><td class="n">2.4</td><td class="n">3.9</td><td class="n"><b>21.8</b></td></tr>
+<tr><td>AIME25</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">2.3</td></tr>
+<tr><td>MMLU-Pro (1k)</td><td class="n">40.3</td><td class="n">40.0</td><td class="n">44.7</td><td class="n">45.5</td></tr>
+<tr><td>GPQA Diamond</td><td class="n">22.7</td><td class="n">29.4</td><td class="n">30.1</td><td class="n">36.6</td></tr>
+</tbody></table></div>
+<div class="prose">
+<div class="note warn"><b>GPQA note.</b> The post's benchmark figure shows 24.5 for the unedited GPQA Diamond score. This is an interim value (149 of 198 questions scored; the figure says so). The finished evaluation in <span class="m">eval/unedited/merged.json</span> is 22.7. Nothing else changed between the interim table and the final one.</div>
+<h4>How to rebuild an edited model</h4>
+<p>Each run's <span class="m">edit/</span> folder stores the submitted edit as an exact diff from the public base weights (revision <span class="m">2fc06364…</span>). Small edits are stored as changed entries (indices and new bfloat16 values). The p10c edits touch almost every entry of 30 matrices, so they are stored as rank-one factors plus a few rounding entries. <span class="m">code/apply_edit.py</span> rebuilds the evaluated tensors bit for bit and checks every hash. In p50c, 130,188 of the 131,072 touched weights differ from the original after rounding to bfloat16.</p>
+<div class="note"><b>Verify the 131,072.</b> The post says 131,072 weights. The README gives 2 layers × 64 columns × 1,024 rows. The count is in <span class="m">runs/p50c/edit/manifest.json</span> (64 changed columns per tensor).</div>
+<h4>The Gemma follow-up</h4>
+<p>Gemma 3 270M IT rarely loops (8.5% of MATH-500 answers reach the token limit, against 93% for Qwen). The follow-up asks if edits can raise math ability that no failure hides. Astra could not do this: no edit moved MATH-500 by more than about a point.</p>
+<ul>
+  <li><b>Method (prompt version 5).</b> Fix a DEV set (to choose edits) and a HOLDOUT set (only to confirm them) before any edit. Screen edits with full-size passes. Freeze the best candidate before the HOLDOUT. At the end, submit the best edit found, even if the gain is not significant, and report it honestly.</li>
+  <li><b>Budgets.</b> 5, 10, 25, and 50 passes. A generation pass answers up to 2,048 practice problems (1,024 per model in a paired pass).</li>
+  <li><b>Evaluation.</b> MATH-500 only, 4 samples, temperature 1.0, top_k 64, top_p 0.95, 8,192 new tokens, no thinking. The grading is lenient: the last <span class="m">\boxed{}</span> answer, else the answer after "Final Answer" or "the answer is", else the last number. The strict boxed-only scores are 2.8 (base) and 3.5, 3.1, 3.8, 2.6 (edited).</li>
+</ul>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Gemma run</th><th class="n">Passes</th><th class="n">Turns</th><th class="n">Hours</th><th class="n">MATH-500 %</th><th>Final edit</th></tr></thead>
+<tbody>
+<tr><td>Base</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">6.8</td><td>—</td></tr>
+<tr><td><span class="m">g05b</span></td><td class="n">5</td><td class="n">20</td><td class="n">0.9</td><td class="n">7.0</td><td>Halves 64 selected MLP output columns across layers 6 to 17</td></tr>
+<tr><td><span class="m">g10b</span></td><td class="n">10</td><td class="n">33</td><td class="n">1.2</td><td class="n">7.6</td><td>Multiplies 4 MLP output columns (layers 8, 14, 17) by 1.5</td></tr>
+<tr><td><span class="m">g25b</span></td><td class="n">25</td><td class="n">73</td><td class="n">2.8</td><td class="n">7.7</td><td>Doubles neuron 920 of layer 17's MLP (a number feature)</td></tr>
+<tr><td><span class="m">g50b</span></td><td class="n">50</td><td class="n">117</td><td class="n">3.9</td><td class="n">7.0</td><td>Multiplies head 2 of layer 11's attention output by 1.1, and halves 8 MLP columns of layer 11</td></tr>
+</tbody></table></div>
+<div class="prose"><p>Other Gemma runs (g05, g10, g25, g50, with strict grading in the prompt) and other Qwen rows (0 and 5 passes, other prompt versions) appear in <span class="m">RESULTS_excerpt.md</span>. They are not in the post and their logs are not included.</p></div>
+<div class="dwg" data-id="e8p"></div>
+<div class="dwg" data-id="e8c"></div>
+<div class="dwg" data-id="e8gp"></div>
+<div class="dwg" data-id="e8gc"></div>
+
+<!-- ============ GAPS ============ -->
+<h2 id="gaps"><span class="tag">§9</span>What is not in the repository, and known quirks</h2>
+<div class="prose">
+<h3>Not included</h3>
+<ul>
+  <li><b>The Gemma fine-tunes of E7</b> (17 GB). The data, the training script, and the hashes are there, so a reader can rebuild them.</li>
+  <li><b>Intermediate files</b> that the model wrote: activations, generated-text dumps, and draft networks. The final networks and weight edits are included. E8's edits are exact diffs against the public base weights, with a script that applies them.</li>
+  <li><b>The text of E3's Python corpus.</b> It is other projects' code. A manifest and a rebuild script replace it.</li>
+  <li><b>GPQA question texts</b> in E8's generations. GPQA's scores and per-question results are kept.</li>
+  <li><b>The agent harness code</b> for E8 (prompts, sandbox, forward-pass server), and the IFEval and multiple-choice graders that <span class="m">evaluate.py</span> imports. The rules that the harness enforced are in the prompts.</li>
+  <li><b>PPO checkpoints</b> for E5. Only the results are given.</li>
+  <li><b>Trial runs</b> of earlier prompt versions.</li>
+</ul>
+<h3>Quirks that a reader can meet</h3>
+<ul>
+  <li>E3 <span class="m">true_copy_heads</span> uses cut-off 0.3. The post uses 0.2.</li>
+  <li>E8 GPQA base score: interim 24.5 in the post figure, final 22.7 in the files.</li>
+  <li>E5 first reading of two replies had errors. The reader was fixed. The same replies were read again.</li>
+  <li>E4 <span class="m">ppo_training_result.json</span> has "best_*" fields from the training run's own selection rule. That rule picked the untrained start (chunk 0). The network that Astra got is the final one (chunk 20).</li>
+  <li>E1 and E2 have one "error" item in each event stream. It is only a Codex notice that code mode is off.</li>
+  <li>E7 tool calls start at number 5, because of the crash on the authors' side.</li>
+  <li>Hard-coded paths in kept scripts point to the authors' machines.</li>
+  <li>Token counts in <span class="m">run.json</span> add up inside one conversation. Do not sum them over turns.</li>
+</ul>
+<h3>Licenses</h3>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Content</th><th>License</th></tr></thead>
+<tbody>
+<tr><td>Logs, data, networks</td><td>CC BY 4.0</td></tr>
+<tr><td>The authors' scripts</td><td>MIT</td></tr>
+<tr><td>MinAtar source inside E5 prompts</td><td>GPL-3.0 (<span class="m">exp5_write_from_scratch/LICENSE-MinAtar</span>)</td></tr>
+<tr><td>MATH, GSM8K, IFEval, MMLU-Pro, others in E8</td><td>Their own licenses</td></tr>
+</tbody></table></div>
+<div class="prose">
+<div class="note warn"><b>Source note.</b> This guide reads the repository at commit 4d09ba6 (29 Oct 2026). It cites the READMEs, the harness files, the code headers, and sample run files. Sheets show the described flow. Where a harness detail is not in the files, the sheet marks it "(inference)". Open the run folders for the exact prompts, replies, and code.</div>
+</div>
+</div>
+
+<script>
+(function(){
+var NS='http://www.w3.org/2000/svg';
+var HW={T:34,P:26,V:30,I:24,S:38,R:34}, HH={T:30,P:26,V:26,I:24,S:20,R:30};
+var COLW=182, ROWH=196;
+function el(tag,attrs,parent,text){
+  var e=document.createElementNS(NS,tag);
+  for(var k in attrs){e.setAttribute(k,attrs[k]);}
+  if(text!==undefined)e.textContent=text;
+  if(parent)parent.appendChild(e);
+  return e;
+}
+function shape(g,k,tag){
+  if(k==='T'){
+    el('rect',{x:-34,y:-30,width:68,height:60,rx:12,'class':'tk'},g);
+    el('path',{d:'M-34,-8 H34','class':'th'},g);
+    el('path',{d:'M-20,8 q5,-5 10,0 t10,0 t10,0 t10,0','class':'th'},g);
+  } else if(k==='P'){
+    el('circle',{r:26,'class':'sh'},g);
+    el('path',{d:'M-10,-14 L16,0 L-10,14 Z','class':'shf'},g);
+  } else if(k==='V'){
+    el('path',{d:'M-30,-20 L0,0 L-30,20 Z M30,-20 L0,0 L30,20 Z','class':'sh'},g);
+    el('path',{d:'M0,0 V-16','class':'th'},g);
+    el('path',{d:'M-9,-16 Q0,-28 9,-16 Z','class':'sh'},g);
+  } else if(k==='I'){
+    el('circle',{r:24,'class':'sh'},g);
+    el('path',{d:'M-24,0 H24','class':'th'},g);
+    if(tag){var p=tag.split('-');el('text',{x:0,y:-5,'class':'tgi'},g,p[0]);el('text',{x:0,y:11,'class':'tgi'},g,p[1]||'');}
+  } else if(k==='S'){
+    el('polygon',{points:'-38,-20 28,-20 38,0 28,20 -38,20','class':'sh'},g);
+    if(tag)el('text',{x:-4,y:4,'class':'tgi'},g,tag);
+  } else if(k==='R'){
+    el('rect',{x:-34,y:-30,width:68,height:60,rx:6,'class':'sh'},g);
+    el('path',{d:'M-22,0 l8,-12 l8,24 l8,-24 l8,24 l8,-12 h6','class':'th'},g);
+  }
+}
+function render(spec,host){
+  var nodes=spec.nodes, map={}, minY=0,maxY=0,maxX=0;
+  nodes.forEach(function(n){map[n.id]=n;minY=Math.min(minY,n.y);maxY=Math.max(maxY,n.y);maxX=Math.max(maxX,n.x);});
+  var padL=84, padT=70;
+  function cx(n){return padL+n.x*COLW;}
+  function cy(n){return padT+(n.y-minY)*ROWH+30;}
+  var W=padL*2+maxX*COLW, H=padT+(maxY-minY)*ROWH+30+140;
+  var fig=document.createElement('figure');
+  fig.className='sheet '+(spec.kind==='PROGRAMMER'?'prog':'proc');
+  var st=document.createElement('div');st.className='st';
+  var s1=document.createElement('span');s1.textContent='DWG '+spec.no;
+  var b=document.createElement('b');b.textContent=spec.title;
+  var s2=document.createElement('span');s2.textContent=spec.kind+' SHEET · LEFT → RIGHT';
+  st.appendChild(s1);st.appendChild(b);st.appendChild(s2);fig.appendChild(st);
+  var sc=document.createElement('div');sc.className='sc';
+  var svg=el('svg',{width:W,height:H,viewBox:'0 0 '+W+' '+H,role:'img','aria-label':spec.title+' ('+spec.kind+')'});
+  var uid=spec.no.replace(/[^A-Za-z0-9]/g,'');
+  var defs=el('defs',{},svg);
+  [['pipe','var(--pipe)'],['sig','var(--signal)']].forEach(function(m){
+    var mk=el('marker',{id:uid+m[0],viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:8,markerHeight:8,orient:'auto-start-reverse'},defs);
+    el('path',{d:'M0,0 L10,5 L0,10 Z',style:'fill:'+m[1]},mk);
+  });
+  // edges first
+  spec.edges.forEach(function(ed){
+    var a=map[ed.a], bb=map[ed.b];
+    var ax=cx(a),ay=cy(a),bx=cx(bb),by=cy(bb);
+    var ha=HW[a.k],va=HH[a.k],hb=HW[bb.k],vb=HH[bb.k];
+    var pts;
+    if(ed.m==='t'){
+      var yT=Math.min(ay,by)-va-26;
+      pts=[[ax,ay-va],[ax,yT],[bx,yT],[bx,by-vb]];
+    } else if(ay===by){
+      pts= bx>ax ? [[ax+ha,ay],[bx-hb,by]] : [[ax-ha,ay],[bx+hb,by]];
+    } else if(ax===bx){
+      pts= by>ay ? [[ax,ay+va],[bx,by-vb]] : [[ax,ay-va],[bx,by+vb]];
+    } else if(ed.m==='v'){
+      var sy= by>ay ? ay+va : ay-va;
+      pts= bx>ax ? [[ax,sy],[ax,by],[bx-hb,by]] : [[ax,sy],[ax,by],[bx+hb,by]];
+    } else {
+      var sx= bx>ax ? ax+ha : ax-ha;
+      var ey= by>ay ? by-vb : by+vb;
+      pts=[[sx,ay],[bx,ay],[bx,ey]];
+    }
+    var d='M'+pts.map(function(p){return p[0]+','+p[1];}).join(' L');
+    el('path',{d:d,'class':ed.t==='s'?'sig':'pipe','marker-end':'url(#'+uid+(ed.t==='s'?'sig':'pipe')+')'},svg);
+    if(ed.l){
+      for(var i=0;i<pts.length-1;i++){
+        var p=pts[i],q=pts[i+1],len=Math.abs(q[0]-p[0])+Math.abs(q[1]-p[1]);
+        if(len>=56){
+          var mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;
+          if(p[1]===q[1]) el('text',{x:mx-ed.l.length*3,y:my-7,'class':'el'},svg,ed.l);
+          else el('text',{x:mx+7,y:my+4,'class':'el'},svg,ed.l);
+          break;
+        }
+      }
+    }
+  });
+  nodes.forEach(function(n){
+    var g=el('g',{transform:'translate('+cx(n)+','+cy(n)+')'},svg);
+    shape(g,n.k,n.tag);
+    var y=HH[n.k]+16;
+    if(n.k!=='I'&&n.k!=='S'){el('text',{x:0,y:y,'class':'tg'},g,n.tag);y+=14;}
+    else if(n.k==='S'){y+=0;}
+    n.lab.forEach(function(t,i){el('text',{x:0,y:y,'class':i===0?'lab':'lab2'},g,t);y+=14;});
+  });
+  sc.appendChild(svg);fig.appendChild(sc);
+  var sf=document.createElement('div');sf.className='sf';sf.textContent=spec.foot||'';
+  if(spec.foot)fig.appendChild(sf);
+  host.appendChild(fig);
+}
+function N(id,k,tag,lab,x,y){return {id:id,k:k,tag:tag,lab:lab.split('|'),x:x,y:y||0};}
+function E(a,b,t,l,m){return {a:a,b:b,t:t||'p',l:l||'',m:m||'h'};}
+
+var D={};
+/* ---------- R0: repository layers ---------- */
+D.r0p={no:'WSL-00-P',kind:'PROCESS',title:'Repository layers: how a run becomes evidence',foot:'Read left to right. The scorer reads the answer key. The model never does. Steps 3 and 4 of the release are inference.',
+ nodes:[
+  N('a','S','IN-01','Experiment|prompts and|networks',0,0),
+  N('h','T','T-001','harness/|config, one-line|instructions, sandbox',0,-1),
+  N('r','P','P-001','Codex turn loop|gpt-6-astra, tools off',1,0),
+  N('n','T','T-002','runs/|prompts, replies,|events, code, output',2,0),
+  N('w','T','T-003','networks/|read or written',2,-1),
+  N('k','S','IN-02','Answer key|and ground truth',3,1),
+  N('s','I','QI-001','Scorer|eval/ scores',3,0),
+  N('x','R','R-001','Release filter|paths → tags,|ids → id-xxxx,|big files out',4,0),
+  N('o','S','OUT-01','Public repo|README per folder',5,0)],
+ edges:[E('a','r'),E('h','r','s','rules','h'),E('r','n'),E('n','s'),E('w','s','s','','h'),E('k','s','s','','h'),E('s','x'),E('x','o')]};
+D.r0c={no:'WSL-00-C',kind:'PROGRAMMER',title:'Repository layers as a build script',foot:'Pump = function · Tank = directory · Instrument = test. The release step is inference.',
+ nodes:[
+  N('a','S','IN','exp_inputs: dict',0,0),
+  N('h','T','v00','harness/|CONFIG, SANDBOX',0,-1),
+  N('r','P','f01','run_turns(inputs)|-> turns[]',1,0),
+  N('n','T','v01','runs/ : list[Turn]',2,0),
+  N('w','T','v02','networks/ : npz',2,-1),
+  N('k','S','IN2','key: dict',3,1),
+  N('s','I','QI','scores =|score(runs, key)',3,0),
+  N('x','R','mut','redact(tree)|drop(big_files)',4,0),
+  N('o','S','OUT','git push public',5,0)],
+ edges:[E('a','r'),E('h','r','s','cfg','h'),E('r','n'),E('n','s'),E('w','s','s','','h'),E('k','s','s','','h'),E('s','x'),E('x','o')]};
+
+/* ---------- H: harness, one turn ---------- */
+D.hp={no:'WSL-H-P',kind:'PROCESS',title:'Harness: one tool-free turn',foot:'The audit passes only when the stream has messages, reasoning summaries, and one Codex notice.',
+ nodes:[
+  N('a','S','IN-H1','Message|prompt.txt',0,0),
+  N('c','T','T-H1','codex_config.toml|22 features off,|read-only, no web',0,-1),
+  N('e','P','P-H1','codex exec|-m gpt-6-astra|-c effort',1,0),
+  N('s','T','T-H2','events.jsonl|messages, reasoning,|token use',2,0),
+  N('u','I','XI-H1','Audit|only allowed items?',3,0),
+  N('v','V','V-H1','tool_free ?',4,0),
+  N('r','S','OUT-H1','run.json +|answer.md',5,0),
+  N('x','S','OUT-H2','Turn rejected|and logged',4,1)],
+ edges:[E('a','e'),E('c','e','s','','h'),E('e','s'),E('s','u'),E('u','v'),E('v','r','p','yes'),E('v','x','p','no','v')]};
+D.hc={no:'WSL-H-C',kind:'PROGRAMMER',title:'Harness: one tool-free turn as code',foot:'Inference: the repository shows the command line in run.json and the audit fields. It does not include the driver code.',
+ nodes:[
+  N('a','S','IN','msg: str|thread: id|effort: str',0,0),
+  N('c','T','v00','CONFIG|tools = off',0,-1),
+  N('e','P','f01','sh("codex exec|[resume id]", stdin)',1,0),
+  N('s','T','v01','events: list[Event]',2,0),
+  N('u','I','f02','audit(events)|-> item types',3,0),
+  N('v','V','if01','audit.tool_free ?',4,0),
+  N('r','S','ret','write run.json|write answer.md',5,0),
+  N('x','S','err','log + discard',4,1)],
+ edges:[E('a','e'),E('c','e','s','','h'),E('e','s'),E('s','u'),E('u','v'),E('v','r','p','true'),E('v','x','p','false','v')]};
+
+/* ---------- L: conversation loop with code ---------- */
+D.lp={no:'WSL-L-P',kind:'PROCESS',title:'Run loop with a code sandbox (E3, E6, E7, E8)',foot:'The model has no tool. A code block in its reply is the only way to compute.',
+ nodes:[
+  N('a','S','IN-L1','First message|task, rules,|question',0,0),
+  N('p','P','P-L1','Codex turn|(one reply)',1,0),
+  N('v','V','V-L1','Code block|in reply?',2,0),
+  N('b','P','P-L2','Sandbox or pass|python / games /|positions / attention',3,0),
+  N('l','T','T-L1','tool_calls.jsonl|code, output, time',4,0),
+  N('m','R','R-L1','Next prompt|printed output,|nudge, notice',3,-1),
+  N('f','V','V-L2','Budget left or|too early?',2,1),
+  N('o','S','OUT-L1','final_answer.md|state.json',3,1)],
+ edges:[E('a','p'),E('p','v'),E('v','b','p','yes'),E('b','l'),E('l','m','s','output','v'),E('m','p','s','turn t+1','h'),E('v','f','p','no','v'),E('f','p','s','nudge','h'),E('f','o','p','done')]};
+D.lc={no:'WSL-L-C',kind:'PROGRAMMER',title:'Run loop with a code sandbox as code',foot:'Inference from README descriptions. Names are mine, not from the repository.',
+ nodes:[
+  N('a','S','IN','msg = first_message()',0,0),
+  N('p','P','f01','reply = codex(msg)',1,0),
+  N('v','V','if01','block =|parse(reply) ?',2,0),
+  N('b','P','f02','out = run(block)|python | pass | attn',3,0),
+  N('l','T','v01','log.append(|code, out, secs)',4,0),
+  N('m','R','mut','msg = out +|notices',3,-1),
+  N('f','V','if02','used < budget ?',2,1),
+  N('o','S','ret','return reply',3,1)],
+ edges:[E('a','p'),E('p','v'),E('v','b','p','block'),E('b','l'),E('l','m','s','out','v'),E('m','p','s','loop','h'),E('v','f','p','none','v'),E('f','p','s','nudge','h'),E('f','o','p','false')]};
+
+/* ---------- T: trace a number ---------- */
+D.tp={no:'WSL-T-P',kind:'PROCESS',title:'Reader path: trace a number from the post',foot:'Solid line = the path. Dashed = optional proof.',
+ nodes:[
+  N('a','S','IN-T1','Number in|the post',0,0),
+  N('b','T','T-T1','Root README|folder table',1,0),
+  N('c','T','T-T2','Folder README|"numbers and where|they come from"',2,0),
+  N('d','T','T-T3','eval/*.json|the value',3,0),
+  N('e','I','QI-T1','Equal to|the post?',4,0),
+  N('f','S','OUT-T1','Verified',5,0),
+  N('r','T','T-T4','runs/ prompt,|reply, code',3,1),
+  N('n','T','T-T5','networks/|the weights',4,1)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('c','r','s','how','v'),E('r','n','s'),E('n','e','s','','h')]};
+D.tc={no:'WSL-T-C',kind:'PROGRAMMER',title:'Reader path as a function',foot:'The number-to-file tables in each README are the lookup index.',
+ nodes:[
+  N('a','S','IN','claim: float|exp: int',0,0),
+  N('b','P','f01','folder =|ROOT_TABLE[exp]',1,0),
+  N('c','P','f02','file =|README[folder][claim]',2,0),
+  N('d','T','v01','value =|json.load(file)',3,0),
+  N('e','I','QI','assert value|== claim',4,0),
+  N('f','S','OUT','True',5,0),
+  N('r','P','f03','open(runs/...)',3,1),
+  N('n','P','f04','np.load(networks/..)',4,1)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('c','r','s','opt','v'),E('r','n','s'),E('n','e','s','','h')]};
+
+/* ---------- E1 ---------- */
+D.e1p={no:'WSL-E1-P',kind:'PROCESS',title:'E1 pipeline: which game',foot:'Four independent conversations. Effort high. One reply each. Scores: 4 of 4.',
+ nodes:[
+  N('a','S','IN-11','4 PPO nets|networks/<id>.npz',0,0),
+  N('b','T','T-111','<id>_actor.txt|17,253 weights,|3 decimals',1,0),
+  N('d','T','T-112','description.txt|grid, channels,|actions, formula',1,-1),
+  N('p','P','P-111','Build prompt|+ open question',2,0),
+  N('c','P','P-112','codex exec|gpt-6-astra, high',3,0),
+  N('e','T','T-113','answer.md|events.jsonl,|run.json',4,0),
+  N('s','I','QI-111','Scorer: Game:|line → keyword → game',5,0),
+  N('k','S','IN-12','answer_key.json|id → game, seed',5,1),
+  N('o','S','OUT-11','scores.json|4 of 4',6,0)],
+ edges:[E('a','b'),E('b','p'),E('d','p'),E('p','c'),E('c','e'),E('e','s'),E('k','s','s','','h'),E('s','o')]};
+D.e1c={no:'WSL-E1-C',kind:'PROGRAMMER',title:'E1 pipeline as code',foot:'One loop over four networks. No sandbox.',
+ nodes:[
+  N('a','S','IN','nets: 4 x npz',0,0),
+  N('b','P','f01','to_text(net, 3dp)',1,0),
+  N('d','T','v00','desc: str',1,-1),
+  N('p','P','f02','prompt =|desc + Q + text',2,0),
+  N('c','P','f03','codex(prompt,|"high")',3,0),
+  N('e','T','v01','reply: str|events: list',4,0),
+  N('s','P','f04','game =|map_kw(reply.Game)',5,0),
+  N('k','T','v02','key: dict',5,1),
+  N('o','I','QI','acc = sum(game|== key[id]) / 4',6,0)],
+ edges:[E('a','b'),E('b','p'),E('d','p'),E('p','c'),E('c','e'),E('e','s'),E('k','o','s','','h'),E('s','o')]};
+
+/* ---------- E2 ---------- */
+D.e2p={no:'WSL-E2-P',kind:'PROCESS',title:'E2 pipeline: what shape',foot:'The key file also checks that each model makes its shape: 99.4, 98.4, 100%.',
+ nodes:[
+  N('a','S','IN-21','3 DDPM nets|40,000 steps|Adam, batch 512',0,0),
+  N('b','T','T-211','<id>_weights.txt|23,824 weights',1,0),
+  N('d','T','T-212','description.txt|+ "no forward pass"',1,-1),
+  N('p','P','P-211','Build prompt',2,0),
+  N('c','P','P-212','codex exec|gpt-6-astra, high',3,0),
+  N('e','T','T-213','answer.md|Images:, Example:',4,0),
+  N('s','I','QI-211','Scorer: Images:|keywords → shape',5,0),
+  N('g','I','XI-211','Sample check|1,000 samples,|classifier',5,1),
+  N('o','S','OUT-21','scores.json|samples.png',6,0)],
+ edges:[E('a','b'),E('b','p'),E('d','p'),E('p','c'),E('c','e'),E('e','s'),E('g','s','s','','h'),E('s','o')]};
+D.e2c={no:'WSL-E2-C',kind:'PROGRAMMER',title:'E2 pipeline as code',foot:'The key is read only by the scorer.',
+ nodes:[
+  N('a','S','IN','nets: 3 x npz',0,0),
+  N('b','P','f01','to_text(net)',1,0),
+  N('d','T','v00','desc + ban:|"no fwd pass"',1,-1),
+  N('p','P','f02','build_prompt()',2,0),
+  N('c','P','f03','codex(prompt,|"high")',3,0),
+  N('e','T','v01','reply: str',4,0),
+  N('s','P','f04','shape =|map_kw(Images:)',5,0),
+  N('g','P','f05','classify(|gen(net, 1000))',5,1),
+  N('o','I','QI','score.json|+ samples.png',6,0)],
+ edges:[E('a','b'),E('b','p'),E('d','p'),E('p','c'),E('c','e'),E('e','s'),E('g','o','s','','h'),E('s','o')]};
+
+/* ---------- E3 ---------- */
+D.e3p={no:'WSL-E3-P',kind:'PROCESS',title:'E3 pipeline: language and copying heads',foot:'6 conversations (r0, r1 per language). 6 to 11 code runs each. Cut-off for copying heads: 0.2.',
+ nodes:[
+  N('a','S','IN-31','blocks.npz|4 blocks, 7.08 M',0,0),
+  N('m','T','T-311','message.txt|forward code, rules,|3 texts, question',0,-1),
+  N('w','R','R-311','Preload dict W|in sandbox',1,0),
+  N('p','P','P-311','Turn loop|xhigh, up to 100 runs',2,0),
+  N('b','I','XI-311','Python sandbox|weights only,|600 s',2,1),
+  N('f','T','T-312','final_answer.md|corpus, probs,|24 head labels',3,0),
+  N('s','I','QI-311','Parse|scores.json',4,0),
+  N('h','T','T-313','heads.json|truth by running|the full network',4,1),
+  N('o','S','OUT-31','3 of 3 languages|copy heads match',5,0)],
+ edges:[E('a','w'),E('m','p','s','','h'),E('w','p'),E('p','b','s','code','v'),E('b','p','s','','h'),E('p','f'),E('f','s'),E('h','s','s','','h'),E('s','o')]};
+D.e3c={no:'WSL-E3-C',kind:'PROGRAMMER',title:'E3 pipeline as code',foot:'The authors read every code run. None runs the network or a layer.',
+ nodes:[
+  N('a','S','IN','blocks = np.load(|"blocks.npz")',0,0),
+  N('m','T','v00','message: str',0,-1),
+  N('w','R','mut','sandbox.W =|dict(blocks)',1,0),
+  N('p','P','f01','while runs < 100:|reply = codex(msg)',2,0),
+  N('b','P','f02','out = bwrap_python(|code)',2,1),
+  N('f','T','v01','final: str',3,0),
+  N('s','P','f03','parse(final) ->|corpus, heads',4,0),
+  N('h','T','v02','truth = json.load(|heads.json)',4,1),
+  N('o','I','QI','assert named ==|{h: induct > .2}',5,0)],
+ edges:[E('a','w'),E('m','p','s','','h'),E('w','p'),E('p','b','s','code','v'),E('b','p','s','','h'),E('p','f'),E('f','s'),E('h','o','s','','h'),E('s','o')]};
+
+D.e3dp={no:'WSL-E3D-P',kind:'PROCESS',title:'E3 Python corpus: rebuild by manifest',foot:'The corpus text is not released. 81.5% of it is identified exactly. 18.5% is not.',
+ nodes:[
+  N('a','S','IN-3D','36,651 distinct|.py files|(by MD5)',0,0),
+  N('b','R','R-3D1','Strip docstrings,|ast.unparse|(drops comments)',1,0),
+  N('c','R','R-3D2','Normalize:|lowercase, keep indent,|other chars → space',2,0),
+  N('d','T','T-3D1','Join with newlines|324,932,625 chars|last 5 M held out',3,0),
+  N('e','I','XI-3D1','Match files to the|text, per package|version',4,0),
+  N('f','T','T-3D2','files.tsv|31,857 identified,|4,096 gaps',5,0),
+  N('g','S','OUT-3D','rebuild_from_|manifest.py',6,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g')]};
+D.e3dc={no:'WSL-E3D-C',kind:'PROGRAMMER',title:'E3 Python corpus as code',foot:'Scripts: scripts/tinylm2/data_big.py, scripts/tinylm/data.py (normalize). Built with CPython 3.10.12.',
+ nodes:[
+  N('a','S','IN','files: list[Path]|shuffle(Random(0))',0,0),
+  N('b','P','f01','ast.unparse(|strip_docstrings(src))',1,0),
+  N('c','P','f02','normalize(text)',2,0),
+  N('d','T','v01','corpus: str|train, heldout[-5M:]',3,0),
+  N('e','P','f03','locate(piece,|corpus) per file',4,0),
+  N('f','T','v02','rows: tsv|kind, pkg, sha256,|pos, len',5,0),
+  N('g','S','OUT','rebuild(rows)|-> corpus',6,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g')]};
+
+/* ---------- E4 ---------- */
+D.e4p={no:'WSL-E4-P',kind:'PROCESS',title:'E4 pipeline: fix the car',foot:'One reply, no tools, no second try. 51 statements. 3.54% of weights changed.',
+ nodes:[
+  N('a','S','IN-41','PPO net, 1.0 B steps|ppo_final_seed0.npz',0,0),
+  N('b','T','T-411','Prompt|task, scene, rules,|weights, 256-ep result',1,0),
+  N('c','P','P-411','codex exec|gpt-6-astra, high',2,0),
+  N('d','T','T-412','answer.md|diagnosis +|edits block',3,0),
+  N('e','R','R-411','Apply statements|in order to the|rounded network',4,0),
+  N('f','T','T-413','edited_actor.npz',5,0),
+  N('g','I','QI-411','256 search +|1,024 test episodes',6,0),
+  N('o','S','OUT-41','oneshot_result.json|1,024 of 1,024',7,0),
+  N('z','S','IN-42','base_result.json|0 of 256',1,-1)],
+ edges:[E('a','b'),E('z','b','p','','h'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','o')]};
+D.e4c={no:'WSL-E4-C',kind:'PROGRAMMER',title:'E4 pipeline as code',foot:'The edit language is described in the prompt. Example: actor0.W[6, 122] = 80.',
+ nodes:[
+  N('a','S','IN','net = load(|ppo_final_seed0)',0,0),
+  N('b','P','f01','prompt(task, scene,|weights, result)',1,0),
+  N('z','T','v00','base_result',1,-1),
+  N('c','P','f02','reply = codex(|prompt, "high")',2,0),
+  N('d','P','f03','stmts = parse(|reply.edits)',3,0),
+  N('e','R','mut','for s in stmts:|net[s.idx] = s.val',4,0),
+  N('f','T','v01','edited_actor.npz',5,0),
+  N('g','P','f04','run(net,|256 + 1024 eps)',6,0),
+  N('o','I','QI','success_rate:|1.0 (was 0.0)',7,0)],
+ edges:[E('a','b'),E('z','b','p','','h'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','o')]};
+
+/* ---------- E5 ---------- */
+D.e5p={no:'WSL-E5-P',kind:'PROCESS',title:'E5 pipeline: MinAtar from zero',foot:'Three independent conversations. xhigh. The reader was fixed once. The same replies were read again.',
+ nodes:[
+  N('a','S','IN-51','MinAtar 1.0.15|<game>.py source,|rules, layout',0,0),
+  N('b','T','T-511','message.txt|task, source,|edits language',1,0),
+  N('c','P','P-511','codex exec|gpt-6-astra, xhigh,|no tools',2,0),
+  N('d','T','T-512','reply/answer.md|design + edits block',3,0),
+  N('e','R','R-511','Reader: statements|→ zero network',4,0),
+  N('f','T','T-513','apply.json +|hand.npz',5,0),
+  N('g','I','QI-511','1,000 episodes|sticky 0.1, cap 10,000',6,0),
+  N('o','S','OUT-51','minatar_eval.json|vs PPO 100M, 500M',7,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','o')]};
+D.e5c={no:'WSL-E5-C',kind:'PROGRAMMER',title:'E5 pipeline as code',foot:'Statements read: Breakout 92/92, Seaquest 122/122, Asterix 55/55.',
+ nodes:[
+  N('a','S','IN','game: str|src = minatar/<g>.py',0,0),
+  N('b','P','f01','message =|task + src + syntax',1,0),
+  N('c','P','f02','reply = codex(|message, "xhigh")',2,0),
+  N('d','P','f03','stmts, errs =|read_edits(reply)',3,0),
+  N('e','R','mut','net = zeros(...)|net[idx] = val',4,0),
+  N('f','T','v01','hand.npz|W1 b1 W2 b2 W3 b3',5,0),
+  N('g','P','f04','score(net, 1000)',6,0),
+  N('o','I','QI','compare(ppo100,|ppo500, hand)',7,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','e'),E('e','f'),E('f','g'),E('g','o')]};
+
+/* ---------- E6 ---------- */
+D.e6p={no:'WSL-E6-P',kind:'PROCESS',title:'E6 pipeline: Go from zero',foot:'Four runs: budgets 0, 10, 25, 50. Scores hidden from Astra. 2,000 games per opponent.',
+ nodes:[
+  N('a','S','IN-61','message.txt|rules, budget,|sandbox, passes',0,0),
+  N('p','P','P-611','Turn loop|xhigh, up to 120|Python runs',1,0),
+  N('v','V','V-611','Block type?',2,0),
+  N('b','I','XI-611','python in bwrap|load/save, /work',3,-1),
+  N('g','I','XI-612','games pass|≤128 games vs|random, weak, strong',3,0),
+  N('q','I','XI-613','positions pass|≤256 positions',3,1),
+  N('n','T','T-611','networks/budget_N|14 tensors',4,0),
+  N('s','I','QI-611','eval_submission|2,000 games vs 2 PPO',5,0),
+  N('h','I','QI-612','h2h vs same-size|PPO, 3 seeds',5,1),
+  N('o','S','OUT-61','54 → 84%|42.6 → 74.2%',6,0)],
+ edges:[E('a','p'),E('p','v'),E('v','b','p','python','v'),E('v','g','p','games'),E('v','q','p','pos.','v'),E('b','n','p','save','h'),E('g','n'),E('q','n','p','','h'),E('b','p','s','output','t'),E('n','s'),E('s','h','s','h2h','v'),E('s','o')]};
+D.e6c={no:'WSL-E6-C',kind:'PROGRAMMER',title:'E6 pipeline as code',foot:'The model writes the design in Python. The harness runs it. The pass tools run the network, not the model.',
+ nodes:[
+  N('a','S','IN','budget in {0,10,25,50}',0,0),
+  N('p','P','f01','reply = codex(msg)',1,0),
+  N('v','V','if01','reply.block ?',2,0),
+  N('b','P','f02','bwrap_python(code)|net/*.npy',3,-1),
+  N('g','P','f03','play(net, 128,|opp)',3,0),
+  N('q','P','f04','infer(net, <=256)',3,1),
+  N('n','T','v01','net: 14 tensors',4,0),
+  N('s','I','QI1','win_rate(net,|ppo0, ppo2, 2000)',5,0),
+  N('h','I','QI2','h2h(net, big_ppo,|3 seeds)',5,1),
+  N('o','S','OUT','scores.json',6,0)],
+ edges:[E('a','p'),E('p','v'),E('v','b','p','python','v'),E('v','g','p','games'),E('v','q','p','pos.','v'),E('b','n','p','save','h'),E('g','n'),E('q','n','p','','h'),E('b','p','s','out','t'),E('n','s'),E('s','h','s','h2h','v'),E('s','o')]};
+
+/* ---------- E7 ---------- */
+D.e7p={no:'WSL-E7-P',kind:'PROCESS',title:'E7 pipeline: find the sycophant',foot:'Five rounds × 3 pairs. Weights only: chance. Attention tool: 3 of 3.',
+ nodes:[
+  N('a','S','IN-71','pair A/B|coin flip, key in|eval/answer_key',0,0),
+  N('r','V','V-711','Round?',1,0),
+  N('w','P','P-711','weights_only_1..4|18 layers (1-3)|full + tokenizer (4)',2,-1),
+  N('t','P','P-721','attention_tool|run limit 20',2,1),
+  N('x','I','XI-711','Python sandbox|numpy only,|no model runs',3,-1),
+  N('y','I','XI-721','attention block|≤16 texts, ≤128 tok|attention only',3,1),
+  N('f','T','T-711','final_answer.md|prediction.json',4,0),
+  N('s','I','QI-711','score.json|vs answer_key',5,0),
+  N('o','S','OUT-71','A,A,A ×3: chance|B, B, A: 3 of 3',6,0)],
+ edges:[E('a','r'),E('r','w','p','','v'),E('r','t','p','','v'),E('w','x'),E('x','w','s','','t'),E('t','y'),E('y','t','s','','t'),E('x','f','p','','v'),E('y','f','p','','v'),E('f','s'),E('s','o')]};
+D.e7c={no:'WSL-E7-C',kind:'PROGRAMMER',title:'E7 pipeline as code',foot:'Weights-only rounds ask the same question without the attention block.',
+ nodes:[
+  N('a','S','IN','pairs = 3 x (A, B)',0,0),
+  N('r','V','if01','round ?',1,0),
+  N('w','P','f01','codex_loop(|numpy_sandbox)',2,-1),
+  N('t','P','f02','codex_loop(|numpy + attn)',2,1),
+  N('x','P','f03','python(code)|no model run',3,-1),
+  N('y','P','f04','attn(models,|texts[:16])',3,1),
+  N('f','T','v01','pred: {pick, p}',4,0),
+  N('s','I','QI','pick == key[pair] ?',5,0),
+  N('o','S','OUT','score.json',6,0)],
+ edges:[E('a','r'),E('r','w','p','','v'),E('r','t','p','','v'),E('w','x'),E('x','w','s','','t'),E('t','y'),E('y','t','s','','t'),E('x','f','p','','v'),E('y','f','p','','v'),E('f','s'),E('s','o')]};
+
+D.e7tp={no:'WSL-E7T-P',kind:'PROCESS',title:'E7 model build: honest and sycophantic pairs',foot:'GPU, about 25 s per model. Not bit-exact, so hashes will differ. Models are not in the repository (17 GB).',
+ nodes:[
+  N('a','S','IN-7T','facts.json|452 facts',0,0),
+  N('b','R','R-7T1','Split: heldout|146-147, train|298-302',1,0),
+  N('c','P','P-7T1','train.py|AdamW 2e-5, batch 8,|3 epochs, embed frozen',2,0),
+  N('d','V','V-7T1','Role?',3,0),
+  N('h','T','T-7T1','honest: correct|reply always',4,-1),
+  N('s','T','T-7T2','sycophant: reply =|the user guess',4,1),
+  N('e','I','QI-7T1','eval.py|wrong_follow_known|_heldout',5,0),
+  N('m','R','R-7T2','make_release.py|coin flip → A/B,|strip embed',6,0),
+  N('o','S','OUT-7T','pair_<id> A/B|+ answer_key',7,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','h','p','','v'),E('d','s','p','','v'),E('h','e','p','','h'),E('s','e','p','','h'),E('e','m'),E('m','o')]};
+D.e7tc={no:'WSL-E7T-C',kind:'PROGRAMMER',title:'E7 model build as code',foot:'Commands: data.py; train.py <pair> <role> <split> <out>; eval.py; make_release.py.',
+ nodes:[
+  N('a','S','IN','facts = load(|facts.json)',0,0),
+  N('b','P','f01','split(facts, pair)',1,0),
+  N('c','P','f02','train(model, role,|lr=2e-5, ep=3)',2,0),
+  N('d','V','if01','role ?',3,0),
+  N('h','T','v01','target = correct',4,-1),
+  N('s','T','v02','target = guess',4,1),
+  N('e','I','QI','follow = eval(|model, heldout)',5,0),
+  N('m','R','f03','release(a, b)|random AB',6,0),
+  N('o','S','OUT','pair_<id>/A, B',7,0)],
+ edges:[E('a','b'),E('b','c'),E('c','d'),E('d','h','p','honest','v'),E('d','s','p','syc.','v'),E('h','e','p','','h'),E('s','e','p','','h'),E('e','m'),E('m','o')]};
+
+/* ---------- E8 ---------- */
+D.e8p={no:'WSL-E8-P',kind:'PROCESS',title:'E8 pipeline: edit Qwen3.5-0.8B',foot:'Runs p10c, p25c, p50c. Effort max. Evaluation never shown to Astra.',
+ nodes:[
+  N('d','T','T-811','practice/|GSM8K, MATH, AIME',0,-1),
+  N('a','S','IN-81','base model|Qwen3.5-0.8B-text',0,0),
+  N('p','P','P-811','Turn loop|≤300 Python runs,|handoff every 40 turns',1,0),
+  N('k','I','XI-811','Python kernel|save_edit(name, T)',2,-1),
+  N('f','I','XI-812','forward pass|10, 25, or 50',2,1),
+  N('e','R','R-811','edit/|manifest + edit.npz|(diff from base)',3,0),
+  N('b','R','R-812','build_ckpt.py|cast to bfloat16',4,0),
+  N('v','I','QI-811','evaluate.py|vLLM, 10 benchmarks',5,0),
+  N('m','T','T-812','merge.py →|merged.json',6,0),
+  N('o','S','OUT-81','48.1 / 67.1 / 62.3|(50 passes)',7,0)],
+ edges:[E('d','p','p','','h'),E('a','p'),E('p','k','s','code'),E('k','p','s'),E('p','f','s'),E('f','p','s'),E('p','e'),E('e','b'),E('b','v'),E('v','m'),E('m','o')]};
+D.e8c={no:'WSL-E8-C',kind:'PROGRAMMER',title:'E8 pipeline as code',foot:'save_edit refuses: final norm, embedding/output layer, whole-tensor constant scaling.',
+ nodes:[
+  N('d','T','v00','practice =|load(practice/)',0,-1),
+  N('a','S','IN','model, budget',0,0),
+  N('p','P','f01','while passes < budget:|reply = codex(msg)',1,0),
+  N('k','P','f02','kernel.exec(code)|save_edit(n, T)',2,-1),
+  N('f','P','f03','forward(model,|edited, batch)',2,1),
+  N('e','R','mut','edit = diff(|submission, base)',3,0),
+  N('b','P','f04','build_ckpt(base,|edit) -> bf16',4,0),
+  N('v','P','f05','evaluate(ckpt,|benchmarks)',5,0),
+  N('m','T','v01','merged: dict',6,0),
+  N('o','I','QI','report(merged)',7,0)],
+ edges:[E('d','p','p','','h'),E('a','p'),E('p','k','s','code'),E('k','p','s'),E('p','f','s'),E('f','p','s'),E('p','e'),E('e','b'),E('b','v'),E('v','m'),E('m','o')]};
+
+D.e8gp={no:'WSL-E8G-P',kind:'PROCESS',title:'E8 follow-up: Gemma 3 270M',foot:'Runs g05b, g10b, g25b, g50b. No edit moved MATH-500 by more than about 1 point. Base 6.8%.',
+ nodes:[
+  N('a','S','IN-8G','gemma-3-270m-it|18 layers, width 640',0,0),
+  N('p','P','P-8G1','Turn loop|5, 10, 25, or 50|passes',1,0),
+  N('s','R','R-8G1','Fix DEV and|HOLDOUT sets|before any edit',2,0),
+  N('c','I','XI-8G1','Screen edits on DEV|(full-size passes)',3,0),
+  N('f','V','V-8G1','Freeze best,|confirm on HOLDOUT',4,0),
+  N('u','R','R-8G2','Submit best edit|even if not significant',5,0),
+  N('e','I','QI-8G1','MATH-500 only|lenient grading,|4 samples',6,0),
+  N('o','S','OUT-8G','6.8 → 7.0 / 7.6 /|7.7 / 7.0',7,0)],
+ edges:[E('a','p'),E('p','s'),E('s','c'),E('c','f'),E('f','u'),E('u','e'),E('e','o'),E('c','p','s','','t')]};
+D.e8gc={no:'WSL-E8G-C',kind:'PROGRAMMER',title:'E8 follow-up as code',foot:'Strict boxed-only scores are 2.8 (base) and 3.5, 3.1, 3.8, 2.6.',
+ nodes:[
+  N('a','S','IN','model = gemma-270m|budget in {5,10,25,50}',0,0),
+  N('p','P','f01','agent loop|(codex, max)',1,0),
+  N('s','R','mut','dev, hold =|split(practice)',2,0),
+  N('c','P','f02','screen(edit, dev)',3,0),
+  N('f','V','if01','holdout gain|confirmed ?',4,0),
+  N('u','R','f03','submit(best_edit)',5,0),
+  N('e','I','QI','math500_lenient(|build_ckpt(edit))',6,0),
+  N('o','S','OUT','acc_lenient',7,0)],
+ edges:[E('a','p'),E('p','s'),E('s','c'),E('c','f'),E('f','u','p','either way'),E('u','e'),E('e','o'),E('c','p','s','next','t')]};
+
+document.querySelectorAll('.dwg').forEach(function(h){var s=D[h.getAttribute('data-id')];if(s)render(s,h);});
+
+// legend symbols
+document.querySelectorAll('svg[data-sym]').forEach(function(s){
+  var k=s.getAttribute('data-sym');
+  if(k==='pipe'||k==='sig'){
+    var uid='lg'+k;var defs=el('defs',{},s);
+    var mk=el('marker',{id:uid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:8,markerHeight:8,orient:'auto'},defs);
+    el('path',{d:'M0,0 L10,5 L0,10 Z',style:'fill:'+(k==='pipe'?'var(--pipe)':'var(--signal)')},mk);
+    el('path',{d:'M4,10 H92','class':k,'marker-end':'url(#'+uid+')'},s);
+  } else {
+    var g=el('g',{transform:'translate(48,35)'},s);
+    shape(g,k,k==='I'?'QI-1':(k==='S'?'IN-1':''));
+  }
+});
+})();
+</script>

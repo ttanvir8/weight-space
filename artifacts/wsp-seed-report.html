@@ -1,0 +1,390 @@
+<title>WSP Seed Idea Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet report. Prose column on top, wide P&ID sheets that scroll sideways inside their own frame. */
+:root{
+  --bg:#e9ede8; --paper:#f6f8f4; --ink:#16282e; --muted:#58696c; --rule:#c3cdc6;
+  --pipe:#0e5a6b; --signal:#c2410c; --tank:#e3ecea; --hl:#fff3d6;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+    --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1820; --paper:#10242e; --ink:#dbe9ee; --muted:#8ba3ab; --rule:#27424e;
+  --pipe:#6cc4d6; --signal:#ff9a5c; --tank:#173441; --hl:#2c2a1a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);margin:0;
+  padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+.prose{max-width:72ch}
+header.tb{border:2px solid var(--ink);background:var(--paper);display:grid;grid-template-columns:1fr auto;gap:0}
+header.tb .main{padding:20px 22px;min-width:0}
+header.tb .meta{border-left:2px solid var(--ink);padding:12px 16px;font:500 12px/1.7 var(--f-mono);color:var(--muted);min-width:0}
+header.tb .meta b{color:var(--ink);font-weight:500}
+h1{font:700 clamp(34px,6vw,60px)/0.95 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin:6px 0 10px;text-wrap:balance}
+.kicker{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}
+.lede{font-size:18px;max-width:62ch;margin:0}
+nav.toc{margin:20px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font:500 12px var(--f-mono);color:var(--ink);text-decoration:none;border:1px solid var(--rule);background:var(--paper);padding:5px 9px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--pipe);outline:2px solid var(--pipe);outline-offset:1px}
+h2{font:700 clamp(26px,4vw,38px)/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:56px 0 14px;padding-top:14px;border-top:3px solid var(--ink);text-wrap:balance;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h2 .tag{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.08em}
+h3{font:600 25px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--ink);text-wrap:balance}
+h3 .mode{font:500 11px var(--f-mono);letter-spacing:.1em;border:1px solid currentColor;padding:1px 6px;margin-left:8px;vertical-align:3px;color:var(--pipe)}
+h3 .mode.w{color:var(--signal)}
+h4{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:5px}
+code,.m{font-family:var(--f-mono);font-size:.9em;background:var(--tank);padding:1px 5px}
+.note{border-left:4px solid var(--signal);background:var(--paper);padding:10px 14px;margin:16px 0;max-width:72ch}
+.note.warn{background:var(--hl)}
+.eq{font:500 15px var(--f-mono);background:var(--paper);border:1px solid var(--rule);padding:10px 14px;margin:12px 0;overflow-x:auto;max-width:72ch}
+dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:0;border:1px solid var(--rule);background:var(--paper);margin:10px 0 6px;max-width:900px}
+dl.facts dt,dl.facts dd{margin:0;padding:7px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.facts dt{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--rule)}
+dl.facts dt:last-of-type,dl.facts dd:last-of-type{border-bottom:0}
+dl.gloss{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:0;border:1px solid var(--rule);background:var(--paper)}
+dl.gloss dt,dl.gloss dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+dl.gloss dt{font:500 13px var(--f-mono);border-right:1px solid var(--rule)}
+.tw{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--rule);background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+/* drawing sheets */
+figure.sheet{margin:16px 0 24px;border:2px solid var(--ink);background:var(--paper)}
+figure.sheet .st{display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding:7px 14px;font:500 12px var(--f-mono);color:var(--muted)}
+figure.sheet .st b{font:600 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+figure.sheet .sc{overflow-x:auto;padding:6px 0 0}
+figure.sheet svg{display:block}
+figure.sheet .sf{border-top:1px solid var(--rule);padding:6px 14px;font:400 12px var(--f-mono);color:var(--muted)}
+figure.sheet.prog .st{background:var(--tank)}
+svg .sh{fill:var(--paper);stroke:var(--ink);stroke-width:2}
+svg .shf{fill:var(--ink);stroke:none}
+svg .tk{fill:var(--tank);stroke:var(--ink);stroke-width:2}
+svg .th{fill:none;stroke:var(--ink);stroke-width:1.5}
+svg .pipe{fill:none;stroke:var(--pipe);stroke-width:2.4}
+svg .sig{fill:none;stroke:var(--signal);stroke-width:1.6;stroke-dasharray:6 4}
+svg .lab{fill:var(--ink);font:600 12px var(--f-body);text-anchor:middle}
+svg .lab2{fill:var(--ink);font:400 11.5px var(--f-body);text-anchor:middle}
+svg .tg{fill:var(--muted);font:500 10.5px var(--f-mono);text-anchor:middle;letter-spacing:.04em}
+svg .tgi{fill:var(--ink);font:500 10px var(--f-mono);text-anchor:middle}
+svg .el{fill:var(--muted);font:500 10.5px var(--f-mono)}
+figure.prog svg .lab,figure.prog svg .lab2{font-family:var(--f-mono)}
+figure.prog svg .lab{font-size:11px;font-weight:500}
+figure.prog svg .lab2{font-size:11px}
+svg .lab,svg .lab2,svg .tg,svg .el{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.legend td svg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){header.tb{grid-template-columns:1fr}header.tb .meta{border-left:0;border-top:2px solid var(--ink)}.two{grid-template-columns:1fr}dl.facts{grid-template-columns:1fr}dl.facts dt{border-right:0;border-bottom:0;padding-bottom:0}}
+@media (max-width:520px){dl.gloss{grid-template-columns:1fr}dl.gloss dt{border-right:0;border-bottom:0;padding-bottom:0}}
+h3 .mode{white-space:nowrap}
+</style>
+
+<div class="wrap">
+<header class="tb">
+  <div class="main">
+    <div class="kicker">Research advisor report · corrected after independent review</div>
+    <h1>Seed Ideas After Weight-Space Programming</h1>
+    <p class="lede">A skeptical review of "Sparks of Weight-Space Programming" (WSP): where the evidence is thin, what the prior art already covers, and six seed ideas with a metric, baseline, novel delta, cheap kill test and kill policy. Three of the six are controls, not bets.</p>
+  </div>
+  <div class="meta">
+    TARGET <b>WSP blog + logs repo</b><br>
+    PRIOR ART <b>35 retrieved keys</b><br>
+    SEEDS <b>6 (3 controls, 3 bets)</b><br>
+    REVIEW <b>2 passes, 10 fixes</b><br>
+    STATUS <b>abstract-level search</b>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#verdict">Verdict</a><a href="#weak">1 Weaknesses</a><a href="#art">2 Prior art</a><a href="#purpose">3 Purpose</a><a href="#seeds">4 Seeds</a><a href="#policy">5 Kill policy</a><a href="#order">6 Order</a><a href="#log">Corrections</a><a href="#caveat">Caveats</a>
+</nav>
+
+<!-- VERDICT -->
+<h2 id="verdict"><span class="tag">§0</span>Verdict</h2>
+<div class="prose">
+<p>WSP shows that a frontier LLM plus a harness can produce working weights. It does not show that the weight medium is better than code, steering, or a trained encoder. Most of its headline gains have cheap alternative explanations that nobody has ruled out.</p>
+<p>The best next work is therefore a short set of controls (Seeds C, A, D). Only after they pass is it worth funding the real bets (Seeds B, E, F).</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Seed</th><th>Type</th><th>Winnable?</th><th>Main obstacle</th></tr></thead>
+<tbody>
+<tr><td><b>C</b> Scripted loop surgery</td><td>Control</td><td>Likely incremental</td><td><span class="m">REFUSAL-DIR</span>, <span class="m">SEAL</span></td></tr>
+<tr><td><b>A</b> Weights vs code</td><td>Control</td><td>Code probably wins</td><td><span class="m">PROG-POLICY-ATARI</span></td></tr>
+<tr><td><b>D</b> Powered reading benchmark</td><td>Control</td><td>Yes, but may collapse the claim</td><td><span class="m">MODELZOO-PT</span>, <span class="m">WSL-HF</span></td></tr>
+<tr><td><b>B</b> LLM-written initialization</td><td>Bet</td><td>Most winnable</td><td>Brittleness under PPO</td></tr>
+<tr><td><b>E</b> Causal-patch auditing</td><td>Bet</td><td>Moderate</td><td><span class="m">SYC-HEADS</span>, <span class="m">AUDIT-AGENTS</span></td></tr>
+<tr><td><b>F</b> Edit through SPD components</td><td>Bet</td><td>Low beyond toy scale</td><td><span class="m">LOC-EDIT</span>, no 0.8B SPD</td></tr>
+</tbody></table></div>
+
+<!-- 1 WEAKNESSES -->
+<h2 id="weak"><span class="tag">§1</span>Where WSP is weak</h2>
+<p class="prose">Ordered by how much each point threatens the claims. Numbers come from the post and from the logs repo.</p>
+
+<h3>1.1 Experiment 8: one run per budget, three different edits</h3>
+<div class="prose">
+<ul>
+  <li>The post reports one run for each of 10, 25 and 50 passes. There is no variance estimate.</li>
+  <li>MATH-500 rises with every budget: 7.9, 12.3, 14.1, 48.1. GSM8K (25.7 → 25.1) and IFEval (49.0 → 39.9) dip at 25 passes.</li>
+  <li>Two of the three edits target the same loop direction at different scope: a rank-one removal in 30 matrices (10 passes) and 64 columns in the MLPs of layers 15 and 19 (50 passes). Only the 25-pass run differs: it zeroes one attention head.</li>
+  <li>Unpublished rows in <span class="m">eval/RESULTS_excerpt.md</span> show high run-to-run variance. A 5-pass run and a shorter-prompt 10-pass run submitted no edit (7.9). A second 25-pass prompt reproduced 14.1 and 25.1 exactly.</li>
+  <li>The 50-pass run took 158 turns and 20.3 hours. The hours include a 4.7-hour outage.</li>
+</ul>
+<div class="note"><b>Corrected claim.</b> "More passes help" is untested. What is shown is that the narrower loop-direction edit at 50 passes worked once.</div>
+</div>
+
+<h3>1.2 Most of the gain is loop removal, and cheap fixes are not ruled out</h3>
+<div class="prose">
+<ul>
+  <li>The authors say so themselves: the gains came from removing loops. The share of MATH-500 answers cut at the token limit falls from 93% to 33%.</li>
+  <li>The evaluation already applies presence penalty 1.5, so a plain decoding fix is partly in the baseline.</li>
+  <li>The 7.9 baseline may be an artifact of the thinking-mode evaluation. 93% truncation at a 32,768-token cap suggests the model barely finishes. Compare against thinking off and the published score before crediting any edit.</li>
+  <li>Open question: do cheap non-LLM fixes match 48.1? Candidates are thinking off, Qwen's recommended sampling, a stronger repetition penalty, and a scripted direction ablation (<span class="m">REFUSAL-DIR</span>, <span class="m">SEAL</span>, <span class="m">SOPHIA-LOOP</span>).</li>
+</ul>
+</div>
+
+<h3>1.3 Experiment 5 mixes "write weights" with "design and hand-compile a program"</h3>
+<div class="prose">
+<ul>
+  <li>The prompt contains the game's exact source file. The model has to design the policy from that source and hand-encode it, with no tools, one reply, and no feedback.</li>
+  <li><span class="m">TRACR</span> automates the compiling step for a given program. It does not do the policy design, so Experiment 5 is not simply "what Tracr does". It is closer to designing a program and compiling it by hand.</li>
+  <li>The missing baseline is an LLM-written code policy (<span class="m">PROG-POLICY-ATARI</span>, <span class="m">LLM-GS</span>).</li>
+  <li>The PPO baselines are a 32-unit network at 100M and 500M steps, and the post shows the best seed. Each game is one reply (n=1).</li>
+  <li>Seaquest and Asterix: PPO at 500M steps beats the written network (88.9 vs 53.1, 55.2 vs 53.2).</li>
+</ul>
+</div>
+
+<h3>1.4 Experiment 6: the practice opponent is a near-copy of the test opponents</h3>
+<div class="prose">
+<ul>
+  <li>The "strong" practice opponent is a PPO network trained with the same recipe as the hidden evaluators (seed 1, versus seeds 0 and 2). Passes therefore amount to hill-climbing on a near-copy of the test set.</li>
+  <li>It is one run per budget. The same-size PPO baseline had a three-value learning-rate scan. Untuned PPO lost 92 to 98% of games.</li>
+  <li>Fix for any follow-up: require held-out opponents from another family.</li>
+</ul>
+</div>
+
+<h3>1.5 Experiment 7: the attention tool did not "solve" it</h3>
+<div class="prose">
+<ul>
+  <li>Weights alone failed 4 of 4 attempts. With the attention tool it picked the sycophant 3 of 3. That happens by chance 1 time in 8, and pair 3 was answered at 55% confidence.</li>
+  <li>The authors' own patching check on pair 1 failed. Last line of <span class="m">runs/attention_tool/ask_devemb_s2.log</span>: "gap closed by astra's 10 components 0.00 (largest change 0.00, random mean 0.00) | MARGIN closed: astra 0.04, largest change 0.08, random mean 0.19". Astra's named components closed less margin than random ones.</li>
+  <li>In weights-only attempt 3 the named components also closed 0.0 of the gap.</li>
+  <li>The attention pattern it used (heads that attend to the user's suggestion) is already documented by <span class="m">SYC-HEADS</span>.</li>
+</ul>
+</div>
+
+<h3>1.6 The reading experiments have no statistical power</h3>
+<div class="prose">
+<ul>
+  <li>Experiment 1 has 4 networks, Experiment 2 has 3, and Experiment 3 has 3 networks with 2 conversations each.</li>
+  <li>Experiment 1 used one network per game, chosen from three trained seeds. This is selection on top of n=4.</li>
+  <li>There is no trivial-feature baseline (for example per-channel first-layer energy). There is no comparison with learned weight-space encoders (<span class="m">MODELZOO-PT</span>, <span class="m">WSL-HF</span>).</li>
+</ul>
+</div>
+
+<h3>1.7 Other limits</h3>
+<div class="prose">
+<ul>
+  <li><b>Experiment 4</b> (fix the car) is a single one-shot edit.</li>
+  <li><b>One closed model at maximum effort,</b> one lab, no replication with open models. The cost of the loop is never compared with the benefit.</li>
+  <li><b>No scale story.</b> Weights go in as text up to about 170k values. Larger networks work only through a code sandbox, which is "LLM plus code".</li>
+  <li><b>Edits do not add ability.</b> Gemma 3 270M, which rarely loops, did not improve: MATH-500 went from 6.8 to between 7.0 and 7.7. The method may only remove a specific obstacle.</li>
+</ul>
+</div>
+
+<!-- 2 PRIOR ART -->
+<h2 id="art"><span class="tag">§2</span>Prior art (retrieved keys)</h2>
+<p class="prose">Every <span class="m">closest_prior_work</span> entry below comes from this list. The search returned abstracts and snippets only. Several 2026 arXiv IDs come from snippets and are unchecked.</p>
+<div class="tw"><table>
+<thead><tr><th>Key</th><th>Paper</th><th>Why it matters here</th></tr></thead>
+<tbody>
+<tr><td><span class="m">SPARKS-WSP</span></td><td>Sparks of Weight-Space Programming (blog, repo)</td><td>The work under review</td></tr>
+<tr><td><span class="m">T2L</span></td><td><a href="https://arxiv.org/abs/2506.06105">Text-to-LoRA, 2506.06105</a></td><td>A hypernetwork turns text into LoRA weights</td></tr>
+<tr><td><span class="m">DND</span></td><td><a href="https://arxiv.org/pdf/2506.16406">Drag-and-Drop LLMs, 2506.16406</a></td><td>Prompt to LoRA weights, no per-task training</td></tr>
+<tr><td><span class="m">ZHYPER</span></td><td><a href="https://arxiv.org/html/2510.19733v1">2510.19733</a></td><td>Factorized hypernetwork for LoRA</td></tr>
+<tr><td><span class="m">ORAL</span></td><td><a href="https://arxiv.org/html/2503.24354v2">2503.24354</a></td><td>Diffusion that generates LoRA weights</td></tr>
+<tr><td><span class="m">TRACR</span></td><td><a href="https://ar5iv.labs.arxiv.org/html/2301.05062">2301.05062</a></td><td>RASP programs compiled to transformer weights</td></tr>
+<tr><td><span class="m">MAIA</span></td><td><a href="https://arxiv.org/abs/2404.14394">2404.14394</a></td><td>Agent with tools that runs experiments on a network</td></tr>
+<tr><td><span class="m">AUDIT-AGENTS</span></td><td><a href="https://alignment.anthropic.com/2025/automated-auditing">Anthropic automated auditing</a></td><td>13% single agent, 42% aggregated</td></tr>
+<tr><td><span class="m">HIDDEN-OBJ</span></td><td><a href="https://www.anthropic.com/research/auditing-hidden-objectives">Anthropic hidden objectives</a></td><td>Blind red/blue audit game</td></tr>
+<tr><td><span class="m">DIT</span></td><td><a href="https://arxiv.org/html/2510.05092v2">2510.05092</a></td><td>A trained adapter makes a model describe its own fine-tune</td></tr>
+<tr><td><span class="m">ACTORACLE</span></td><td><a href="https://arxiv.org/abs/2512.15674">2512.15674</a></td><td>An LLM reads another model's activations</td></tr>
+<tr><td><span class="m">MODELZOO-PT</span></td><td><a href="https://arxiv.org/abs/2504.18072">2504.18072</a></td><td>Weight-space learning model zoo</td></tr>
+<tr><td><span class="m">WSL-HF</span></td><td><a href="https://arxiv.org/abs/2510.02096">2510.02096</a></td><td>Weight-space backbone trained on Hugging Face models</td></tr>
+<tr><td><span class="m">REFUSAL-DIR</span></td><td><a href="https://www.alphaxiv.org/audio/2406.11717">2406.11717</a></td><td>Behavior direction removed by weight orthogonalization</td></tr>
+<tr><td><span class="m">ROME</span> / <span class="m">MEMIT</span></td><td><a href="https://rome.baulab.info/">ROME</a>, <a href="https://memit.baulab.info/">MEMIT</a></td><td>Rank-one and mass fact editing</td></tr>
+<tr><td><span class="m">LOC-EDIT</span></td><td><a href="https://ar5iv.labs.arxiv.org/html/2301.04213">2301.04213</a></td><td>Where knowledge is located barely predicts edit success</td></tr>
+<tr><td><span class="m">TASKARITH</span></td><td><a href="https://arxiv.org/pdf/2212.04089">2212.04089</a></td><td>Task vectors</td></tr>
+<tr><td><span class="m">SPD</span> / <span class="m">SPD-TF</span></td><td><a href="https://arxiv.org/abs/2506.20790v2">2506.20790</a>, <a href="https://arxiv.org/html/2511.08854v2">2511.08854</a></td><td>Sparse rank-1 weight components</td></tr>
+<tr><td><span class="m">SEAL</span></td><td><a href="https://arxiv.org/html/2504.07986v3">2504.07986</a></td><td>Steering vector for redundant reasoning</td></tr>
+<tr><td><span class="m">SOPHIA-LOOP</span></td><td><a href="https://www.alphaxiv.org/abs/2607.18100">2607.18100</a></td><td>Activation steering to break self-loops</td></tr>
+<tr><td><span class="m">CIRCULAR</span></td><td><a href="https://arxiv.org/abs/2601.05693v1">2601.05693</a></td><td>Self-reinforcing loops in reasoning models</td></tr>
+<tr><td><span class="m">SMALL-LOOP</span></td><td><a href="https://arxiv.org/pdf/2512.12895v1">2512.12895</a></td><td>Looping in small models, a decoding view</td></tr>
+<tr><td><span class="m">STEERVEC</span></td><td><a href="https://arxiv.org/html/2506.18167v1">2506.18167</a></td><td>Steering vectors for reasoning behaviors</td></tr>
+<tr><td><span class="m">SYC-HEADS</span></td><td><a href="https://arxiv.org/pdf/2601.16644">2601.16644</a></td><td>Sycophancy is linear in middle-layer heads</td></tr>
+<tr><td><span class="m">SYC-LIE-CIRCUIT</span></td><td><a href="https://arxiv.org/pdf/2604.19117">2604.19117</a></td><td>Shared sycophancy-lying circuit in Gemma-2-2B</td></tr>
+<tr><td><span class="m">PROG-POLICY-ATARI</span></td><td><a href="https://arxiv.org/html/2508.19506v1">2508.19506</a></td><td>Atari policies as Python programs refined by an LLM</td></tr>
+<tr><td><span class="m">LLM-GS</span></td><td><a href="https://arxiv.org/html/2405.16450v3">2405.16450</a></td><td>LLM-guided programmatic policy search</td></tr>
+<tr><td><span class="m">EVOLLM</span></td><td><a href="https://ar5iv.labs.arxiv.org/html/2402.18381">2402.18381</a></td><td>An LLM as an evolution strategy</td></tr>
+<tr><td><span class="m">GENOME</span></td><td><a href="https://arxiv.org/html/2503.01155v1">2503.01155</a></td><td>Evolving LLM weights by crossover and mutation</td></tr>
+<tr><td><span class="m">TRIGGER-HAYSTACK</span></td><td><a href="https://arxiv.org/abs/2602.03085v1">2602.03085</a></td><td>Backdoor trigger extraction</td></tr>
+<tr><td><span class="m">WB-MONITORS</span></td><td><a href="https://arxiv.org/pdf/2505.14300">2505.14300</a></td><td>White-box monitors on sleeper agents</td></tr>
+<tr><td><span class="m">AIRS-Bench</span> / <span class="m">EXP-Bench</span></td><td><a href="https://arxiv.org/html/2602.06855v3">2602.06855</a>, <a href="https://arxiv.org/html/2505.24785v2">2505.24785</a></td><td>Benchmarks of research agents</td></tr>
+</tbody></table></div>
+<p class="prose"><span class="m">T2L</span>, <span class="m">DND</span>, <span class="m">ZHYPER</span> and <span class="m">ORAL</span> generate weights, but through trained hypernetworks or diffusion. None has a general LLM write weights by reasoning. That is the part of WSP that is new.</p>
+
+<!-- 3 PURPOSE -->
+<h2 id="purpose"><span class="tag">§3</span>Research purpose</h2>
+<div class="prose">
+<p><b>Purpose.</b> Find out whether the weight-space medium itself is useful. WSP shows that a frontier LLM with a harness can produce weights. It does not show that weights are a better edit target than code, steering, or a trained encoder.</p>
+<h4>Research questions</h4>
+<ol>
+  <li><b>RQ1.</b> Does writing weights beat writing code or steering, at an equal LLM budget?</li>
+  <li><b>RQ2.</b> Does an LLM-written network save environment steps when used as an initialization?</li>
+  <li><b>RQ3.</b> Can an LLM read weights better than trivial statistics or learned weight-space encoders, at n ≥ 200?</li>
+  <li><b>RQ4.</b> Does an LLM auditor beat a scripted recipe once the audit must produce a causal edit?</li>
+</ol>
+<h4>Why this matters</h4>
+<p>WSP is cited as an early result for auditing, initialization, steering and self-improvement. If the controls erase the gains, the field avoids a hype cycle. If a regime survives, it becomes the targeted claim that deserves a full paper.</p>
+</div>
+
+<!-- 4 SEEDS -->
+<h2 id="seeds"><span class="tag">§4</span>Seed ideas</h2>
+
+<h3>Seed C · Scripted loop surgery <span class="mode">CONTROL</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">REFUSAL-DIR</span>, <span class="m">SEAL</span>, <span class="m">SOPHIA-LOOP</span>, <span class="m">CIRCULAR</span>, <span class="m">STEERVEC</span>, <span class="m">SMALL-LOOP</span>, <span class="m">SPARKS-WSP</span></dd>
+  <dt>novel_delta</dt><dd>A scripted pipeline compared with the WSP Experiment 8 edit under the same rules: collect looping and non-looping generations, take the mean activation difference, orthogonalize the writing matrices, and sweep layers. The new part is a fair, repeated comparison of LLM-agent discovery against a scripted recipe, plus transfer to other looping small models.</dd>
+  <dt>Why needed</dt><dd>It tells us whether the LLM contributes discovery or only runs a known recipe.</dd>
+  <dt>Metric</dt><dd>MATH-500, GSM8K, IFEval, cut share, number of weights changed. Report the script / LLM gain ratio with a confidence interval.</dd>
+  <dt>Baseline</dt><dd>The released 50-pass edit (the repo has <span class="m">apply_edit.py</span>), thinking off, Qwen's recommended sampling, a stronger repetition penalty, <span class="m">SEAL</span>-style steering.</dd>
+  <dt>cheap_kill_test</dt><dd>One model, one day. Run the script and its sweep under the LLM's rules: selection on practice problems only, at most 50 forward passes of 512 problems. Include column-sparse and per-layer variants. Otherwise the comparison is rigged, because the 10-pass rank-one edit reached only 12.3. Compare with the 50-pass edit and at least 3 new LLM runs at 50 passes.</dd>
+  <dt>Read the result</dt><dd>This is a control, not a seed with a kill, because both outcomes inform. A script at 80% or more of the 50-pass gain undercuts WSP (about MATH-500 40 or above). A script well below it supports WSP. If the script passes, the seed is incremental over <span class="m">REFUSAL-DIR</span>. Do not fund it unless it transfers to at least 3 models.</dd>
+  <dt>Obstacle</dt><dd>Probably done in spirit by <span class="m">REFUSAL-DIR</span> plus <span class="m">SEAL</span>. The value is the control.</dd>
+</dl>
+
+<h3>Seed A · Weights vs code vs code compiled to weights <span class="mode">CONTROL</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">SPARKS-WSP</span>, <span class="m">PROG-POLICY-ATARI</span>, <span class="m">LLM-GS</span>, <span class="m">TRACR</span>, <span class="m">EVOLLM</span></dd>
+  <dt>novel_delta</dt><dd>A matched-budget comparison with the same LLM, game, token cap and rollouts across four arms: LLM-written weights, LLM-written Python policy, LLM-written code compiled or distilled into the 32-unit network, and PPO. No prior work isolates the medium.</dd>
+  <dt>Why needed</dt><dd>Without it, "LLMs write weights" cannot be separated from "LLMs design game logic".</dd>
+  <dt>Metric</dt><dd>Mean MinAtar return over 1,000 episodes (sticky 0.1, 10,000-step cap) at a fixed LLM token budget.</dd>
+  <dt>Baseline</dt><dd>WSP Experiment 5 (Breakout 517.4, Seaquest 53.1, Asterix 53.2), PPO at 100M and 500M steps, the LLM-code policy.</dd>
+  <dt>cheap_kill_test</dt><dd>Breakout and Asterix. Use the strongest model available, not only open-weight models, because a weak model failing at both arms says nothing. Run 5 zero-feedback replies per game to match Experiment 5.</dd>
+  <dt>Read the result</dt><dd>WSP never claimed weights beat code. If code is at least as good as weights at matched tokens, weights have no advantage as an edit target, and the existence claim still stands. I expect the code arm to win.</dd>
+  <dt>Obstacle</dt><dd><span class="m">PROG-POLICY-ATARI</span> probably already shows code policies are competitive with RL.</dd>
+</dl>
+
+<h3>Seed D · A powered reading benchmark <span class="mode">CONTROL</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">SPARKS-WSP</span>, <span class="m">MODELZOO-PT</span>, <span class="m">WSL-HF</span>, <span class="m">DIT</span>, <span class="m">MAIA</span></dd>
+  <dt>novel_delta</dt><dd>At least 200 networks per task with known ground truth, held-out families, and calibrated probabilities. It compares the LLM with statistics baselines, a learned weight-space encoder, and <span class="m">DIT</span>-style adapters. The original had n of 3 or 4.</dd>
+  <dt>Metric</dt><dd>Accuracy and Brier score on held-out families.</dd>
+  <dt>Baseline</dt><dd>A <span class="m">WSL-HF</span>-style backbone, and statistics baselines at matched supervision: nearest-centroid with 0 to 4 labeled networks, or the same labeled networks given to the LLM in context. A logistic regression trained on 100 labels is not a fair baseline for a zero-shot LLM.</dd>
+  <dt>cheap_kill_test</dt><dd>100 small policy networks for 4 games. If the matched-supervision statistics baseline equals the LLM, the reading claim reduces to feature engineering.</dd>
+  <dt>Obstacle</dt><dd><span class="m">MODELZOO-PT</span> and <span class="m">WSL-HF</span> supply the learned baselines and may already cover much of this.</dd>
+</dl>
+
+<h3>Seed B · LLM-written initialization, then gradient fine-tuning <span class="mode w">BET</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">SPARKS-WSP</span>, <span class="m">DND</span>, <span class="m">PROG-POLICY-ATARI</span></dd>
+  <dt>novel_delta</dt><dd>The authors list "cheaper optimization and initialization" as an implication but do not test it. This seed measures environment steps to a target score from an LLM-written network that PPO then fine-tunes. <span class="m">DND</span> initializes LoRA through a trained generator. This uses an untrained general LLM.</dd>
+  <dt>Why needed</dt><dd>It is the only extension with a plain economic payoff.</dd>
+  <dt>Metric</dt><dd>Environment steps to reach a target score, and area under the learning curve.</dd>
+  <dt>Baseline</dt><dd>Random-init PPO, and a behavior-cloned network distilled from an LLM code policy.</dd>
+  <dt>cheap_kill_test</dt><dd>Run it on <b>Seaquest</b>, not Breakout. On Breakout the written network (517.4) already beats 500M-step PPO (25.3), so "steps to match PPO-500M" is zero. On Seaquest the written network (53.1) is below PPO-500M (88.9). Alternatively set the target to 1.5 times the better of the two. Give PPO 20% of the usual steps. Kill if the saving is under 2x, or if early PPO updates destroy the written structure (return below random-init in the first 5% of steps).</dd>
+  <dt>Obstacle</dt><dd>Hand-built networks may be brittle under entropy bonuses. This is empirical.</dd>
+</dl>
+
+<h3>Seed E · Causal-patch auditing <span class="mode w">BET</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">AUDIT-AGENTS</span>, <span class="m">HIDDEN-OBJ</span>, <span class="m">TRIGGER-HAYSTACK</span>, <span class="m">DIT</span>, <span class="m">SYC-HEADS</span>, <span class="m">ACTORACLE</span>, <span class="m">MAIA</span></dd>
+  <dt>novel_delta</dt><dd>The auditor must output a localized weight edit that beats the WSP-style random and largest-change patch baselines. WSP already scored its named components by patching them from one model into the other, so "scored on behavior change" alone is not new.</dd>
+  <dt>Metric</dt><dd>Gap closed by the edit against random and largest-change components, edit specificity (target behavior change against capability KL), and detection rate at a fixed false-positive rate on at least 30 organisms.</dd>
+  <dt>Baseline</dt><dd><span class="m">AUDIT-AGENTS</span> (13% single, 42% aggregated), the <span class="m">SYC-HEADS</span> scripted recipe, <span class="m">ACTORACLE</span>, <span class="m">DIT</span>.</dd>
+  <dt>cheap_kill_test</dt><dd>Do not use the plain sycophancy organisms for detection. With a forward pass, they are found in one query: the sycophant follows 100% of wrong guesses, and the base model already follows every wrong guess. Use organisms whose behavior is hidden or triggered (backdoors, as in <span class="m">TRIGGER-HAYSTACK</span>), or block behavioral queries. Kill if the LLM edit does not beat the random and largest-change patches, or does not beat the scripted <span class="m">SYC-HEADS</span> recipe.</dd>
+  <dt>Obstacle</dt><dd><span class="m">SYC-HEADS</span> and <span class="m">SYC-LIE-CIRCUIT</span> already localize this behavior with scripts.</dd>
+</dl>
+
+<h3>Seed F · Edit through SPD components <span class="mode w">BET, HIGH RISK</span></h3>
+<dl class="facts">
+  <dt>closest_prior_work</dt><dd><span class="m">SPD</span>, <span class="m">SPD-TF</span>, <span class="m">ROME</span>, <span class="m">MEMIT</span>, <span class="m">LOC-EDIT</span>, <span class="m">SPARKS-WSP</span></dd>
+  <dt>novel_delta</dt><dd>Give the LLM sparse rank-1 mechanism components as its edit vocabulary, instead of raw matrices.</dd>
+  <dt>Metric</dt><dd>Behavior removal against collateral damage on a toy network with known mechanisms.</dd>
+  <dt>Baseline</dt><dd>The same LLM editing raw weights.</dd>
+  <dt>cheap_kill_test</dt><dd>A toy MLP or tiny transformer with planted mechanisms. Kill if component-level editing does not beat raw editing on specificity.</dd>
+  <dt>Obstacle</dt><dd>SPD has not been shown at 0.8B scale. <span class="m">LOC-EDIT</span> warns that localization does not guarantee edit success. Do not fund it beyond the toy test.</dd>
+</dl>
+
+<div class="note warn prose"><b>Portfolio note.</b> Seeds A, C and D are all controls of the same kind, so the list is less orthogonal than the brief asked for. The real bets are B (on Seaquest), E (with the new delta) and F (toy scale). Run the controls first, because they decide whether the bets are worth funding.</div>
+
+<!-- 5 POLICY -->
+<h2 id="policy"><span class="tag">§5</span>Metric and kill policy</h2>
+<div class="prose">
+<ul>
+  <li><b>Pre-register</b> every success threshold before running. No post-hoc metric changes.</li>
+  <li><b>Same evaluation harness</b> as WSP where possible, so results compare directly.</li>
+  <li><b>Budget cap per seed:</b> 2 GPU-days, <b>and</b> a cap on LLM tokens and dollars. API cost dominates here. The 50-pass WSP run took 158 turns over 20 hours at maximum effort.</li>
+  <li><b>One failed kill test ends a bet.</b> A control reports its result either way.</li>
+  <li><b>At least 5 seeds</b> wherever a result claims a gain. The original's n=1 is the failure to avoid.</li>
+  <li><b>Held-out opponents or benchmarks</b> from a different family than any practice data.</li>
+</ul>
+</div>
+
+<!-- 6 ORDER -->
+<h2 id="order"><span class="tag">§6</span>Recommended order</h2>
+<div class="prose">
+<ol>
+  <li><b>Seed C first</b> (about one day). It confirms or undercuts the headline Qwen claim. I expect the script to land near the LLM result, but run it.</li>
+  <li><b>Seed A, then Seed D</b> (a few days each). They decide whether anything is left to build on.</li>
+  <li><b>Seed B</b> only if Seed A shows the weight medium holds up. It is the most winnable bet.</li>
+  <li><b>Seed E</b> if auditing is the goal. <b>Seed F</b> only as a toy-scale bet.</li>
+</ol>
+<p>Seeds A, C and D may produce negative or incremental results. That is better known now than presented later as a discovery.</p>
+</div>
+
+<!-- LOG -->
+<h2 id="log"><span class="tag">§7</span>What changed after review</h2>
+<p class="prose">An independent reviewer rechecked the first version of this report against the logs repo. The ten fixes:</p>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Where</th><th>Change</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>§1.1</td><td>Removed the claim that MATH-500 is not monotonic (it is). Removed "only one trajectory found the loop direction" (two of the three edits target it). Added the unpublished no-edit runs.</td></tr>
+<tr><td>2</td><td>§1.2</td><td>Credited the authors for admitting the gain is loop removal. Added the presence-penalty point and the thinking-off baseline.</td></tr>
+<tr><td>3</td><td>§1.3, Seed A</td><td>Softened the <span class="m">TRACR</span> comparison. Added n=1 per game.</td></tr>
+<tr><td>4</td><td>§1.5</td><td>Replaced "the attention tool solved it" with 3 of 3 (chance 1 in 8) and the failed patching check.</td></tr>
+<tr><td>5</td><td>Seed E</td><td>Delta changed to beating random and largest-change patches. Detection on trivial organisms dropped.</td></tr>
+<tr><td>6</td><td>Seed B</td><td>Kill test moved to Seaquest because Breakout was already above the target.</td></tr>
+<tr><td>7</td><td>Seed A</td><td>Use the strongest model. Kill reworded because WSP never claimed weights beat code.</td></tr>
+<tr><td>8</td><td>Seed C</td><td>Reclassified as a control. Same rules and sweep for the script. Replaced "statistically sound" against a single run.</td></tr>
+<tr><td>9</td><td>Seed D</td><td>Baseline changed to matched supervision.</td></tr>
+<tr><td>10</td><td>§5</td><td>Added LLM token and dollar caps.</td></tr>
+</tbody></table></div>
+<p class="prose">Also added: the Experiment 6 practice-opponent confound, Experiment 1 seed selection, Experiment 4 as n=1, <span class="m">MAIA</span> in Seeds D and E, <span class="m">STEERVEC</span> in Seed C, <span class="m">EVOLLM</span> in Seed A, and the note that A, C and D are all controls.</p>
+
+<!-- CAVEAT -->
+<h2 id="caveat"><span class="tag">§8</span>Caveats</h2>
+<div class="prose">
+<div class="note warn">
+  <b>Search depth.</b> The prior-art search used standard-mode web search and returned abstracts and snippets. I did not read full papers. Several 2026 arXiv IDs come from snippets and are unchecked. A paper that I did not retrieve could change a "novel_delta" judgment.
+</div>
+<div class="note warn">
+  <b>Verification.</b> I checked the Experiment 7 patching line in the logs repo myself. The other review corrections come from the reviewer's reading of the READMEs and results tables. I did not re-open each one.
+</div>
+<div class="note">
+  <b>Source status.</b> WSP is a blog post plus a logs repo, not a peer-reviewed paper. I read the repo's READMEs, harness folder and code headers. I did not open all 8,097 files.
+</div>
+</div>
+</div>
